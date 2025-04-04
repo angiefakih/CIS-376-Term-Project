@@ -1,0 +1,29 @@
+This has the 'Sign Up' and 'Login' working on both mobile and web
+
+The login page is that of Jad's
+
+The home page after logging in is the default from before, not Angie's
+
+All buttons on the home page lead to none functioning pages
+
+When signing up, a message will tell you:
+ - if the email is already used 
+ - if the account was created successfully (sends to login page and
+shows message)
+ - if a field is missing
+
+* Spamming invalid emails will no longer lock the database
+
+When logging in, a message will tell you:
+ - if the email/password is incorrect
+ - if the log in is correct (it will log you in to the home page)
+
+- The inputs clear when switching pages to/from Log in and Sign up
+
+Messages clear when navigating back to the page
+
+When a new message comes, the 5 second timer restarts
+
+
+
+
