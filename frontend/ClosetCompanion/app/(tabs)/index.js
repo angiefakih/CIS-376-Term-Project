@@ -11,11 +11,14 @@ import {
   ScrollView,
   ImageBackground,
 } from 'react-native';
+import { useRouter } from 'expo-router'; // ✅ Navigation
 
 // ✅ Make sure this file exists at: assets/images/closetbackground.jpg
 import backgroundImage from '../../assets/images/closetbackground.png';
 
 export default function App() {
+  const router = useRouter(); // ✅ Init router
+
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,23 +26,21 @@ export default function App() {
   const [lastName, setLastName] = useState('');
   const [gender, setGender] = useState('');
 
-
-  // ✅ Update with your correct local or ngrok IP address
-  const BACKEND_URL = "http://192.168.68.147:5000";
+  const BACKEND_URL = "http://192.168.0.103:5000"; // ✅ Replace with your backend IP
 
   const handleSubmit = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password.");
       return;
     }
-  
+
     if (isSignup && (!firstName || !lastName || !gender)) {
       Alert.alert("Error", "Please fill in all signup fields.");
       return;
     }
-  
+
     const endpoint = isSignup ? "/signup" : "/login";
-  
+
     try {
       const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: "POST",
@@ -47,15 +48,22 @@ export default function App() {
         body: JSON.stringify(
           isSignup
             ? { email, password, first_name: firstName, last_name: lastName, gender }
-
             : { email, password }
         ),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         Alert.alert("Success", data.message);
+
+        // ✅ Navigate to dashboard with username param (adjust key if needed)
+        router.replace({
+          pathname: '/dashboard',
+          params: {
+            username: data.first_name || email.split('@')[0] // fallback if backend doesn't return name
+          }
+        });
       } else {
         Alert.alert("Error", data.error || "Something went wrong");
       }
@@ -64,7 +72,6 @@ export default function App() {
       Alert.alert("Error", "Failed to connect to server.");
     }
   };
-
 
   return (
     <ImageBackground
@@ -78,42 +85,43 @@ export default function App() {
       >
         <ScrollView contentContainerStyle={styles.inner}>
           <Text style={styles.title}>{isSignup ? "Sign Up" : "Login"}</Text>
+
           {isSignup && (
-  <>
-    <TextInput
-      placeholder="First Name"
-      style={styles.input}
-      value={firstName}
-      onChangeText={setFirstName}
-    />
-    <TextInput
-      placeholder="Last Name"
-      style={styles.input}
-      value={lastName}
-      onChangeText={setLastName}
-    />
-    <View style={styles.genderContainer}>
-      <TouchableOpacity
-        style={[
-          styles.genderButton,
-          gender === "Male" && styles.genderSelected,
-        ]}
-        onPress={() => setGender("Male")}
-      >
-        <Text style={styles.genderText}>Male</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          styles.genderButton,
-          gender === "Female" && styles.genderSelected,
-        ]}
-        onPress={() => setGender("Female")}
-      >
-        <Text style={styles.genderText}>Female</Text>
-      </TouchableOpacity>
-    </View>
-  </>
-)}
+            <>
+              <TextInput
+                placeholder="First Name"
+                style={styles.input}
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+              <TextInput
+                placeholder="Last Name"
+                style={styles.input}
+                value={lastName}
+                onChangeText={setLastName}
+              />
+              <View style={styles.genderContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.genderButton,
+                    gender === "Male" && styles.genderSelected,
+                  ]}
+                  onPress={() => setGender("Male")}
+                >
+                  <Text style={styles.genderText}>Male</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.genderButton,
+                    gender === "Female" && styles.genderSelected,
+                  ]}
+                  onPress={() => setGender("Female")}
+                >
+                  <Text style={styles.genderText}>Female</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
 
           <TextInput
             placeholder="Email"
@@ -159,7 +167,6 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    //backgroundColor: 'rgba(0,0,0,0.3 )', // optional white overlay for readability
   },
   inner: {
     padding: 24,
@@ -214,6 +221,4 @@ const styles = StyleSheet.create({
   genderText: {
     color: "#fff",
   },
-  
-  
 });

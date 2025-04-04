@@ -60,6 +60,30 @@ def login():
         return jsonify({"message": "Login successful"}), 200
     else:
         return jsonify({"error": "Invalid email or password"}), 401
+# --- Simulated wardrobe route ---
+@app.route("/wardrobe", methods=["GET"])
+def get_wardrobe():
+    # Sample hardcoded clothing items for testing
+    wardrobe_items = [
+        {
+            "id": 1,
+            "imageUrl": "https://i.imgur.com/UYiroysl.jpg",  # sample shirt image
+            "category": "Shirt",
+            "color": "Blue",
+            "brand": "Nike",
+            "season": "Summer"
+        },
+        {
+            "id": 2,
+            "imageUrl": "https://i.imgur.com/UPrs1EWl.jpg",  # sample pants image
+            "category": "Pants",
+            "color": "Black",
+            "brand": "Levi's",
+            "season": "Winter"
+        }
+    ]
+
+    return jsonify({"items": wardrobe_items})
 
 # --- Run the app ---
 if __name__ == "__main__":
