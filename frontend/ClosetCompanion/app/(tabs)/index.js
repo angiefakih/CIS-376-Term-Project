@@ -19,27 +19,41 @@ export default function App() {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState('');
+
 
   // ✅ Update with your correct local or ngrok IP address
-  const BACKEND_URL = "http://192.168.0.114:5000";
+  const BACKEND_URL = "http://192.168.68.147:5000";
 
   const handleSubmit = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password.");
       return;
     }
-
+  
+    if (isSignup && (!firstName || !lastName || !gender)) {
+      Alert.alert("Error", "Please fill in all signup fields.");
+      return;
+    }
+  
     const endpoint = isSignup ? "/signup" : "/login";
-
+  
     try {
       const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(
+          isSignup
+            ? { email, password, first_name: firstName, last_name: lastName, gender }
+
+            : { email, password }
+        ),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         Alert.alert("Success", data.message);
       } else {
@@ -50,6 +64,7 @@ export default function App() {
       Alert.alert("Error", "Failed to connect to server.");
     }
   };
+
 
   return (
     <ImageBackground
@@ -63,6 +78,42 @@ export default function App() {
       >
         <ScrollView contentContainerStyle={styles.inner}>
           <Text style={styles.title}>{isSignup ? "Sign Up" : "Login"}</Text>
+          {isSignup && (
+  <>
+    <TextInput
+      placeholder="First Name"
+      style={styles.input}
+      value={firstName}
+      onChangeText={setFirstName}
+    />
+    <TextInput
+      placeholder="Last Name"
+      style={styles.input}
+      value={lastName}
+      onChangeText={setLastName}
+    />
+    <View style={styles.genderContainer}>
+      <TouchableOpacity
+        style={[
+          styles.genderButton,
+          gender === "Male" && styles.genderSelected,
+        ]}
+        onPress={() => setGender("Male")}
+      >
+        <Text style={styles.genderText}>Male</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.genderButton,
+          gender === "Female" && styles.genderSelected,
+        ]}
+        onPress={() => setGender("Female")}
+      >
+        <Text style={styles.genderText}>Female</Text>
+      </TouchableOpacity>
+    </View>
+  </>
+)}
 
           <TextInput
             placeholder="Email"
@@ -146,5 +197,23 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
   },
+  genderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 15,
+  },
+  genderButton: {
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#888",
+  },
+  genderSelected: {
+    backgroundColor: "#444",
+  },
+  genderText: {
+    color: "#fff",
+  },
+  
   
 });
