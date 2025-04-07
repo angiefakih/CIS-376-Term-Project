@@ -1,11 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Alert,
+  Image,
+  TouchableOpacity,
+  Platform,
+  ScrollView,
+  ImageBackground
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import { LinearGradient } from 'expo-linear-gradient';
+import { FontAwesome } from '@expo/vector-icons';
+import backgroundImage from '../assets/images/luxe-fabric.png';
 
 export default function UploadScreen({ navigation, route }) {
   const user_id = route.params?.user_id;
-
   const [imageUri, setImageUri] = useState(route.params?.image || '');
   const [category, setCategory] = useState(route.params?.category || '');
   const [color, setColor] = useState(route.params?.color || '');
@@ -18,15 +31,14 @@ export default function UploadScreen({ navigation, route }) {
       allowsEditing: true,
       quality: 1,
     });
-
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
     }
   };
 
   const handleUpload = async () => {
-    if (!imageUri || !category) {
-      Alert.alert("Missing info", "Please pick an image and enter a category.");
+    if (!imageUri || !category || !color || !brand || !season) {
+      Alert.alert("Missing info", "Please complete all fields and pick an image.");
       return;
     }
 
@@ -35,16 +47,9 @@ export default function UploadScreen({ navigation, route }) {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      const clothingData = {
-        user_id,
-        image_data: base64Image,
-        category,
-        color,
-        brand,
-        season
-      };
+      const clothingData = { user_id, image_data: base64Image, category, color, brand, season };
 
-      const response = await fetch('http://192.168.68.115:5000/upload', {
+      const response = await fetch('http://192.168.0.108:5000/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clothingData)
@@ -53,7 +58,7 @@ export default function UploadScreen({ navigation, route }) {
       const data = await response.json();
 
       if (response.ok) {
-        navigation.navigate('Confirmation', { ...clothingData, image: `http://192.168.68.115:5000${data.image_path}` });
+        navigation.navigate('Confirmation', { ...clothingData, image: `http://192.168.0.108:5000${data.image_path}` });
       } else {
         navigation.navigate('Retry', { ...clothingData });
       }
@@ -64,25 +69,107 @@ export default function UploadScreen({ navigation, route }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Upload Clothing Item</Text>
+    <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
+      <LinearGradient colors={['rgb(0,0,0,0.1)', 'rgba(0,0,0,0.7)']} style={styles.overlay}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.title}>Upload Item</Text>
 
-      <Button title="Pick Image from Files" onPress={pickImage} />
-      {imageUri ? (
-        <Image source={{ uri: imageUri }} style={{ width: 100, height: 100, marginVertical: 10 }} />
-      ) : null}
+          <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+            <FontAwesome name="image" size={20} color="#fff" />
+            <Text style={styles.pickerText}>Pick Image</Text>
+          </TouchableOpacity>
 
-      <TextInput placeholder="Category" style={styles.input} value={category} onChangeText={setCategory} />
-      <TextInput placeholder="Color" style={styles.input} value={color} onChangeText={setColor} />
-      <TextInput placeholder="Brand" style={styles.input} value={brand} onChangeText={setBrand} />
-      <TextInput placeholder="Season" style={styles.input} value={season} onChangeText={setSeason} />
-      <Button title="Upload" onPress={handleUpload} />
-    </View>
+          {imageUri && (
+            <Image source={{ uri: imageUri }} style={styles.previewImage} />
+          )}
+
+          <TextInput placeholder="Category" style={styles.input} placeholderTextColor="#ccc" value={category} onChangeText={setCategory} />
+          <TextInput placeholder="Color" style={styles.input} placeholderTextColor="#ccc" value={color} onChangeText={setColor} />
+          <TextInput placeholder="Brand" style={styles.input} placeholderTextColor="#ccc" value={brand} onChangeText={setBrand} />
+          <TextInput placeholder="Season" style={styles.input} placeholderTextColor="#ccc" value={season} onChangeText={setSeason} />
+
+          <TouchableOpacity onPress={handleUpload} style={styles.uploadButton}>
+            <Text style={styles.uploadText}>Upload</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </LinearGradient>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  input: { borderWidth: 1, borderColor: '#ccc', marginBottom: 10, padding: 10, borderRadius: 5 }
+  background: {
+    flex: 1,
+  },
+  overlay: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 26,
+    color: '#F5ECD7',
+    textAlign: 'center',
+    marginBottom: 30,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    fontWeight: 'bold',
+    letterSpacing: 1.2,
+  },
+  input: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: '#666',
+    padding: 12,
+    borderRadius: 10,
+    color: '#fff',
+    marginBottom: 15,
+    fontSize: 15,
+  },
+  imagePicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    paddingVertical: 12,
+    justifyContent: 'center',
+    borderRadius: 10,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#555',
+  },
+  pickerText: {
+    color: '#F5F5DC',
+    marginLeft: 10,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  previewImage: {
+    width: 120,
+    height: 120,
+    alignSelf: 'center',
+    marginBottom: 20,
+    borderRadius: 8,
+    borderColor: '#ddd',
+    borderWidth: 1,
+  },
+  uploadButton: {
+    backgroundColor: '#3A3A3A',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 10,
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+  uploadText: {
+    color: '#EFE6DA',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
 });

@@ -6,7 +6,7 @@ export default function WardrobeScreen({ route }) {
   const user_id = route.params?.user_id;
 
   useEffect(() => {
-    fetch(`http://localhost:5000/wardrobe/${user_id}`)
+    fetch(`http://192.168.60.103:5000/wardrobe/${user_id}`)
       .then(res => res.json())
       .then(setItems)
       .catch(err => console.error(err));
@@ -20,7 +20,7 @@ export default function WardrobeScreen({ route }) {
         keyExtractor={item => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Image source={{ uri: item.image }} style={styles.image} />
+            <Image source={{ uri: `http://192.168.0.103:5000${item.image}` }} style={styles.image} />
             <Text>{item.category} - {item.color}</Text>
             <Text>{item.brand}</Text>
           </View>

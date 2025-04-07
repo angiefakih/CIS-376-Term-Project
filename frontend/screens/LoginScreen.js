@@ -21,7 +21,7 @@ const backendHost =
     : Constants.expoConfig?.hostUri?.split(':')[0];
 const BACKEND_URL = `http://${backendHost}:5000`;
 
-import backgroundImage from '../assets/images/closetbackground.png';
+import backgroundImage from '../assets/images/loginbackground.jpg';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -32,18 +32,12 @@ export default function LoginScreen() {
   const messageTimerRef = useRef(null);
 
   const showMessage = (text, color) => {
-    if (messageTimerRef.current) {
-      clearTimeout(messageTimerRef.current);
-    }
-
+    if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
     setMessage(null);
-
     setTimeout(() => {
       setMessage({ text, color });
-
       messageTimerRef.current = setTimeout(() => {
         setMessage(null);
-        messageTimerRef.current = null;
       }, 5000);
     }, 0);
   };
@@ -52,7 +46,7 @@ export default function LoginScreen() {
     useCallback(() => {
       setEmail('');
       setPassword('');
-      setMessage(null); // ✅ Clear message on screen refocus
+      setMessage(null);
     }, [])
   );
 
@@ -61,9 +55,7 @@ export default function LoginScreen() {
       showMessage("Account created successfully.", "green");
     }
     return () => {
-      if (messageTimerRef.current) {
-        clearTimeout(messageTimerRef.current);
-      }
+      if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
     };
   }, [route]);
 
@@ -83,7 +75,8 @@ export default function LoginScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        navigation.navigate("Home");
+        const user_id = data.user_id;
+        navigation.navigate("Home", { user_id });
       } else {
         showMessage("Email/Password is Incorrect", "red");
       }
@@ -97,38 +90,42 @@ export default function LoginScreen() {
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.overlay}>
         <ScrollView contentContainerStyle={styles.inner}>
-          <Text style={styles.title}>Login</Text>
+          <View style={styles.blurBox}>
+            <Text style={styles.title}>Welcome Back</Text>
 
-          {message?.text ? (
-            <Text style={[styles.messageText, { color: message.color }]}>
-              {message.text}
-            </Text>
-          ) : null}
+            {message?.text && (
+              <Text style={[styles.messageText, { color: message.color }]}>
+                {message.text}
+              </Text>
+            )}
 
-          <TextInput
-            placeholder="Email"
-            style={styles.input}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor="#ccc"
+              style={styles.input}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
 
-          <TextInput
-            placeholder="Password"
-            style={styles.input}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+            <TextInput
+              placeholder="Password"
+              placeholderTextColor="#ccc"
+              style={styles.input}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Log In</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Log In</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("SignUp")} style={styles.linkWrapper}>
-            <Text style={styles.linkText}>Don't have an account? Sign up</Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("SignUp")} style={styles.linkWrapper}>
+              <Text style={styles.linkText}>Don’t have an account? <Text style={{ fontWeight: 'bold' }}>Sign up</Text></Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </ImageBackground>
@@ -143,45 +140,57 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
+    justifyContent: "center",
   },
   inner: {
-    padding: 24,
-    justifyContent: "center",
     flexGrow: 1,
+    justifyContent: "center",
+    padding: 24,
+  },
+  blurBox: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 24,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     textAlign: "center",
-    marginBottom: 20,
-    fontWeight: "bold",
-    color: "#000",
+    marginBottom: 24,
+    fontWeight: "700",
+    fontFamily: 'serif',
+    color: "#f2f2f2",
   },
   input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    marginBottom: 15,
-    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#aaa',
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 14,
+    color: '#f5f5f5',
   },
   button: {
-    backgroundColor: "#222",
+    backgroundColor: "#f2f2f2",
     padding: 15,
     borderRadius: 10,
-    marginBottom: 10,
+    marginTop: 10,
   },
   buttonText: {
-    color: "#fff",
+    color: "#111",
     fontSize: 16,
-    textAlign: "center"
+    textAlign: "center",
+    fontWeight: "600"
   },
   linkWrapper: {
     alignSelf: 'center',
-    marginTop: 10,
+    marginTop: 16,
   },
   linkText: {
-    color: "#000",
-    textDecorationLine: "underline",
+    color: "#e0e0e0",
     fontSize: 14,
   },
   messageText: {

@@ -109,20 +109,28 @@ def signup():
 @app.route('/upload', methods=['POST'])
 def upload_clothing():
     data = request.get_json()
-    print("Received data:", data)
 
+    
     user_id = data.get('user_id')
-    image_data = data.get('image_data')  # now expects base64 string
+    image_data = data.get('image_data')  # base64 string
     category = data.get('category')
     color = data.get('color')
     brand = data.get('brand')
     season = data.get('season')
 
-    if not all([user_id, image_data, category]):
-        return jsonify({'error': 'Missing required fields'}), 400
+    
+    print("Received data:", data)
+    print("User ID:", user_id)
+    print("Image length:", len(image_data) if image_data else 'None')
+    print("Category:", category, "Color:", color, "Brand:", brand, "Season:", season)
+
+
+    if not all([user_id, image_data, category, color, brand, season]):
+     return jsonify({'error': 'Missing required fields'}), 400
+
 
     try:
-        # Save base64 image as a real file
+        # Save image as file
         filename = f"{user_id}_{datetime.utcnow().timestamp()}.jpg"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
 
@@ -131,6 +139,7 @@ def upload_clothing():
 
         image_path = f"/uploads/{filename}"
 
+        # Save clothing info to DB
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
@@ -144,6 +153,7 @@ def upload_clothing():
     except Exception as e:
         print("Error during upload:", e)
         return jsonify({'error': 'Server error'}), 500
+
 
 @app.route("/wardrobe/<int:user_id>", methods=["GET"])
 def get_wardrobe(user_id):
