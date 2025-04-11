@@ -1,78 +1,66 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, ScrollView } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
-import backgroundImage from '../assets/images/loginbackground.jpg'; 
 
 export default function MannequinScreen() {
   return (
-    <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
-      <LinearGradient colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.8)']} style={styles.overlay}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Style Your Mannequin</Text>
+    <View style={styles.background}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Style Your Mannequin</Text>
 
-          <Image
-            source={require('../assets/images/mannequin-placeholder.jpg')} 
-            style={styles.mannequin}
-          />
+        <Text style={styles.subtitle}>Coming Soon</Text>
 
-          <Text style={styles.subtitle}>Coming Soon</Text>
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.styleButton}>
-              <FontAwesome5 name="tshirt" size={18} color="#fff" />
-              <Text style={styles.buttonText}>Add Top</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.styleButton}>
-              <FontAwesome5 name="shoe-prints" size={18} color="#fff" />
-              <Text style={styles.buttonText}>Add Shoes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.styleButton}>
-              <FontAwesome5 name="hat-cowboy" size={18} color="#fff" />
-              <Text style={styles.buttonText}>Add Accessory</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.styleButton}>
+            <FontAwesome5 name="tshirt" size={18} color="#3B3A39" />
+            <Text style={styles.buttonText}>Add Top</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.styleButton}>
+            <FontAwesome5 name="shoe-prints" size={18} color="#3B3A39" />
+            <Text style={styles.buttonText}>Add Shoes</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.styleButton}>
+            <FontAwesome5 name="hat-cowboy" size={18} color="#3B3A39" />
+            <Text style={styles.buttonText}>Add Accessory</Text>
+          </TouchableOpacity>
         </View>
-      </LinearGradient>
-    </ImageBackground>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1 },
-  overlay: {
+  background: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 24,
+    backgroundColor: '#F9F7F3', // Wardrobe-style solid background
   },
   container: {
+    flexGrow: 1,
     alignItems: 'center',
+    padding: 24,
+    paddingTop: 40,
   },
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#F5ECD7',
+    color: '#3B3A39',
     marginBottom: 20,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    letterSpacing: 1.2,
   },
   subtitle: {
     fontSize: 18,
-    color: '#ccc',
+    color: '#666',
     marginTop: 10,
     marginBottom: 30,
-  },
-  mannequin: {
-    width: 180,
-    height: 300,
-    resizeMode: 'contain',
-    marginBottom: 10,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   buttonContainer: {
     width: '100%',
     marginTop: 10,
   },
   styleButton: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#ffffffee',
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
@@ -80,13 +68,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#666',
+    borderColor: '#ccc',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   buttonText: {
-    color: '#EFE6DA',
+    color: '#3B3A39',
     marginLeft: 10,
     fontWeight: '600',
     fontSize: 16,
     letterSpacing: 1,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
 });

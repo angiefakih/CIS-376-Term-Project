@@ -16,6 +16,8 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { FontAwesome } from '@expo/vector-icons';
 import backgroundImage from '../assets/images/loginbackground.jpg';
+import { API_URL } from '../config';
+
 
 export default function UploadScreen({ navigation, route }) {
   const user_id = route.params?.user_id;
@@ -51,14 +53,14 @@ export default function UploadScreen({ navigation, route }) {
       Alert.alert("Missing info", "Please complete all fields and pick an image.");
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     try {
       const base64Image = await FileSystem.readAsStringAsync(imageUri, {
         encoding: FileSystem.EncodingType.Base64,
       });
-
+  
       const clothingData = {
         user_id,
         image_data: base64Image,
@@ -67,19 +69,19 @@ export default function UploadScreen({ navigation, route }) {
         brand,
         season,
       };
-
-      const response = await fetch('http://192.168.68.131:5000/upload', {
+  
+      const response = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clothingData),
       });
-
+  
       const data = await response.json();
-
+  
       setIsLoading(false);
-
+  
       console.log("Server response:", response.status, data);
-
+  
       if (response.ok) {
         Alert.alert("Success", "Your item has been uploaded.", [
           {
@@ -88,7 +90,7 @@ export default function UploadScreen({ navigation, route }) {
               resetForm();
               navigation.navigate('Confirmation', {
                 ...clothingData,
-                image: `http://192.168.68.131:5000${data.image_path}`,
+                image: `${API_URL}${data.image_path}`, 
               });
             },
           },
@@ -111,6 +113,7 @@ export default function UploadScreen({ navigation, route }) {
       });
     }
   };
+  
 
   return (
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">

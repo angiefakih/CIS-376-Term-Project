@@ -151,11 +151,11 @@ def upload_clothing():
         conn.commit()
         conn.close()
 
-        print("✅ Upload success. Returning:", image_path)
+        print("Upload success. Returning:", image_path)
         return jsonify({'message': 'Item uploaded successfully', 'image_path': image_path}), 200
 
     except Exception as e:
-        print("❌ Upload error:", e)
+        print("Upload error:", e)
         return jsonify({'error': 'Server error'}), 500
 
 @app.route("/wardrobe/<int:user_id>", methods=["GET"])
@@ -170,6 +170,21 @@ def get_wardrobe(user_id):
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+
+@app.route("/wardrobe/<int:item_id>", methods=["DELETE"])
+def delete_clothing_item(item_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM clothing WHERE id = ?", (item_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Item deleted successfully'})
+    except Exception as e:
+        print("Delete error:", e)
+        return jsonify({'error': 'Failed to delete item'}), 500
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

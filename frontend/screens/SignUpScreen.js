@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,240 +6,203 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   ImageBackground,
+  Platform
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import Constants from 'expo-constants';
-
-const { manifest2, manifest } = Constants;
-const backendHost =
-  Platform.OS === 'web'
-    ? 'localhost'
-    : Constants.expoConfig?.hostUri?.split(':')[0];
-const BACKEND_URL = `http://${backendHost}:5000`;
-
 import backgroundImage from '../assets/images/loginbackground.jpg';
+import { API_URL } from '../config';
 
-export default function SignUpScreen() {
-  const navigation = useNavigation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+export default function SignupScreen({ navigation }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [gender, setGender] = useState('');
-  const [message, setMessage] = useState(null);
-  const messageTimerRef = useRef(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const showMessage = (text, color) => {
-    if (messageTimerRef.current) {
-      clearTimeout(messageTimerRef.current);
-    }
+  const BACKEND_URL = 'http://192.168.0.109:5000';
 
-    setMessage(null);
-
-    setTimeout(() => {
-      setMessage({ text, color });
-
-      messageTimerRef.current = setTimeout(() => {
-        setMessage(null);
-        messageTimerRef.current = null;
-      }, 5000);
-    }, 0);
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      setEmail('');
-      setPassword('');
-      setFirstName('');
-      setLastName('');
-      setGender('');
-      setMessage(null); 
-    }, [])
-  );
-
-  useEffect(() => {
-    return () => {
-      if (messageTimerRef.current) {
-        clearTimeout(messageTimerRef.current);
-      }
-    };
-  }, []);
-
-  const handleSignUp = async () => {
-    if (!email || !password || !firstName || !lastName || !gender) {
-      showMessage("Please fill in all fields.", "red");
+  const handleSignup = async () => {
+    if (!firstName || !lastName || !gender || !email || !password) {
+      Alert.alert("Missing Info", "Please fill out all fields.");
       return;
     }
-
+  
     try {
-      const response = await fetch(`${BACKEND_URL}/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch(`${API_URL}/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          password,
           first_name: firstName,
           last_name: lastName,
-          gender
-        }),
+          gender,
+          email,
+          password
+        })
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
-        navigation.navigate("Login", { signupSuccess: true });
+        Alert.alert("Success", "Account created successfully", [
+          {
+            text: "Go to Login",
+            onPress: () => navigation.navigate('Login')
+          }
+        ]);
       } else {
-        showMessage(data.error || "Email is already in use.", "red");
+        Alert.alert("Error", data.error || "Signup failed");
       }
     } catch (error) {
-      console.error(error);
-      showMessage("Failed to connect to server.", "red");
+      console.error("Signup error:", error);
+      Alert.alert("Error", "Failed to connect to server.");
     }
   };
 
   return (
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.overlay}>
-        <ScrollView contentContainerStyle={styles.inner}>
-          <Text style={styles.title}>Sign Up</Text>
-
-          {message?.text ? (
-            <Text style={[styles.messageText, { color: message.color }]}>
-              {message.text}
-            </Text>
-          ) : null}
+      <View style={styles.overlay}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.title}>Create an Account</Text>
 
           <TextInput
             placeholder="First Name"
             style={styles.input}
+            placeholderTextColor="#ccc"
             value={firstName}
             onChangeText={setFirstName}
           />
+
           <TextInput
             placeholder="Last Name"
             style={styles.input}
+            placeholderTextColor="#ccc"
             value={lastName}
             onChangeText={setLastName}
           />
+
           <View style={styles.genderContainer}>
-            <TouchableOpacity
-              style={[styles.genderButton, gender === "Male" && styles.genderSelected]}
-              onPress={() => setGender("Male")}
-            >
-              <Text style={styles.genderText}>Male</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.genderButton, gender === "Female" && styles.genderSelected]}
-              onPress={() => setGender("Female")}
-            >
-              <Text style={styles.genderText}>Female</Text>
-            </TouchableOpacity>
+            {['Female', 'Male', 'Other'].map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[styles.genderButton, gender === option && styles.genderSelected]}
+                onPress={() => setGender(option)}
+              >
+                <Text style={styles.genderText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           <TextInput
             placeholder="Email"
             style={styles.input}
-            autoCapitalize="none"
-            keyboardType="email-address"
+            placeholderTextColor="#ccc"
             value={email}
             onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
           />
 
           <TextInput
             placeholder="Password"
             style={styles.input}
-            secureTextEntry
+            placeholderTextColor="#ccc"
             value={password}
             onChangeText={setPassword}
+            secureTextEntry
           />
 
-          <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+          <TouchableOpacity style={styles.button} onPress={handleSignup}>
             <Text style={styles.buttonText}>Create Account</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Login")} style={styles.linkWrapper}>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
             <Text style={styles.linkText}>Already have an account? Log in</Text>
           </TouchableOpacity>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </View>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
+  background: { flex: 1 },
   overlay: {
     flex: 1,
-  },
-  inner: {
+    backgroundColor: 'rgba(0,0,0,0.7)',
     padding: 24,
-    justifyContent: "center",
+    justifyContent: 'center',
+  },
+  container: {
     flexGrow: 1,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 28,
-    textAlign: "center",
-    marginBottom: 20,
-    fontWeight: "bold",
-    color: "#000",
+    fontSize: 26,
+    color: '#F5F5DC',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 30,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    letterSpacing: 1.2,
   },
   input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    marginBottom: 15,
-    borderRadius: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  button: {
-    backgroundColor: "#222",
-    padding: 15,
+    borderColor: '#F5F5DC',
+    padding: 12,
     borderRadius: 10,
-    marginBottom: 10,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    textAlign: "center"
-  },
-  linkWrapper: {
-    alignSelf: 'center',
-    marginTop: 10,
-  },
-  linkText: {
-    color: "#000",
-    textDecorationLine: "underline",
-    fontSize: 14,
+    color: '#fff',
+    marginBottom: 15,
+    fontSize: 15,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   genderContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
   },
   genderButton: {
-    padding: 10,
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#888",
+    borderColor: '#F5F5DC',
+    backgroundColor: 'transparent',
   },
   genderSelected: {
-    backgroundColor: "#444",
+    backgroundColor: '#F5F5DC',
   },
   genderText: {
-    color: "#fff",
-  },
-  messageText: {
-    textAlign: 'center',
-    marginBottom: 10,
+    color: '#F5F5DC',
+    fontWeight: '600',
     fontSize: 14,
-    fontWeight: '500',
+  },
+  button: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 10,
+    borderColor: '#F5F5DC',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  buttonText: {
+    color: '#F5F5DC',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 1,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  linkText: {
+    color: '#ccc',
+    textAlign: 'center',
+    marginTop: 16,
+    fontSize: 14,
   },
 });
