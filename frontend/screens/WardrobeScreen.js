@@ -16,11 +16,27 @@ export default function WardrobeScreen({ route }) {
   const user_id = route.params?.user_id;
 
   useEffect(() => {
-    fetch(`http://192.168.68.115:5000/wardrobe/${user_id}`)
-      .then(res => res.json())
-      .then(setItems)
-      .catch(err => console.error(err));
+    fetch(`http://192.168.68.131:5000/wardrobe/${user_id}`)
+    .then(res => res.json())
+      .then(data => {
+        console.log("📦 Fetched wardrobe items:", data);
+        setItems(data);
+      })
+      .catch(err => console.error("❌ Fetch wardrobe failed:", err));
   }, []);
+  
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <Image
+        source={{ uri:  `http://192.168.68.131:5000${item.image}` }}
+        style={styles.image}
+        onError={() => console.warn(`⚠️ Image failed to load: ${item.image}`)}
+      />
+      <Text style={styles.text}>{item.category} - {item.color}</Text>
+      <Text style={styles.text}>{item.brand}</Text>
+    </View>
+  );
 
   return (
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
@@ -31,16 +47,7 @@ export default function WardrobeScreen({ route }) {
             data={items}
             keyExtractor={item => item.id.toString()}
             contentContainerStyle={styles.list}
-            renderItem={({ item }) => (
-              <View style={styles.card}>
-                <Image
-                  source={{ uri: `http://192.168.68.115:5000${item.image}` }}
-                  style={styles.image}
-                />
-                <Text style={styles.text}>{item.category} - {item.color}</Text>
-                <Text style={styles.text}>{item.brand}</Text>
-              </View>
-            )}
+            renderItem={renderItem}
           />
         </View>
       </LinearGradient>
