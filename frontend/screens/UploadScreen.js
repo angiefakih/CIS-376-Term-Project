@@ -39,7 +39,7 @@ export default function UploadScreen({ navigation, route }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 1,
+      quality: 0.5,
     });
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
@@ -59,42 +59,56 @@ export default function UploadScreen({ navigation, route }) {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      const clothingData = { user_id, image_data: base64Image, category, color, brand, season };
+      const clothingData = {
+        user_id,
+        image_data: base64Image,
+        category,
+        color,
+        brand,
+        season,
+      };
 
-      const response = await fetch('http://192.168.68.115:5000/upload', {
+      const response = await fetch('http://192.168.68.131:5000/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(clothingData)
+        body: JSON.stringify(clothingData),
       });
 
       const data = await response.json();
 
       setIsLoading(false);
 
+      console.log("Server response:", response.status, data);
+
       if (response.ok) {
-        Alert.alert(
-          "Success",
-          "Your item has been uploaded.",
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                resetForm();
-                navigation.navigate('Confirmation', {
-                  ...clothingData,
-                  image: `http://192.168.68.115:5000${data.image_path}`
-                });
-              }
-            }
-          ]
-        );
+        Alert.alert("Success", "Your item has been uploaded.", [
+          {
+            text: "OK",
+            onPress: () => {
+              resetForm();
+              navigation.navigate('Confirmation', {
+                ...clothingData,
+                image: `http://192.168.68.131:5000${data.image_path}`,
+              });
+            },
+          },
+        ]);
       } else {
+        Alert.alert("Upload failed", data.error || "Something went wrong.");
         navigation.navigate('Retry', { ...clothingData });
       }
     } catch (error) {
       setIsLoading(false);
-      console.error("Upload error:", error);
-      navigation.navigate('Retry', { user_id, image: imageUri, category, color, brand, season });
+      console.error("Upload error:", error.message);
+      Alert.alert("Error", error.message || "Failed to upload.");
+      navigation.navigate('Retry', {
+        user_id,
+        image: imageUri,
+        category,
+        color,
+        brand,
+        season,
+      });
     }
   };
 
@@ -102,6 +116,12 @@ export default function UploadScreen({ navigation, route }) {
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
       <View style={styles.overlay}>
         <ScrollView contentContainerStyle={styles.container}>
+          {/* Back button */}
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <FontAwesome name="arrow-left" size={20} color="#F5F5DC" />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+
           <Text style={styles.title}>Upload Item</Text>
 
           <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
@@ -109,9 +129,7 @@ export default function UploadScreen({ navigation, route }) {
             <Text style={styles.pickerText}>Pick Image</Text>
           </TouchableOpacity>
 
-          {imageUri && (
-            <Image source={{ uri: imageUri }} style={styles.previewImage} />
-          )}
+          {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
 
           <TextInput placeholder="Category" style={styles.input} placeholderTextColor="#ccc" value={category} onChangeText={setCategory} />
           <TextInput placeholder="Color" style={styles.input} placeholderTextColor="#ccc" value={color} onChangeText={setColor} />
@@ -144,6 +162,19 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: 'center',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    alignSelf: 'flex-start',
+  },
+  backText: {
+    color: '#F5F5DC',
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   title: {
     fontSize: 26,
