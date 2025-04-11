@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   darkOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',      // 🔥 centers vertically
+    justifyContent: 'center',   
     alignItems: 'center',
     paddingHorizontal: 24,
   },

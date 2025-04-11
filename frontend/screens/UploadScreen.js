@@ -9,21 +9,31 @@ import {
   TouchableOpacity,
   Platform,
   ScrollView,
-  ImageBackground
+  ImageBackground,
+  ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
-import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome } from '@expo/vector-icons';
-import backgroundImage from '../assets/images/luxe-fabric.png';
+import backgroundImage from '../assets/images/loginbackground.jpg';
 
 export default function UploadScreen({ navigation, route }) {
   const user_id = route.params?.user_id;
-  const [imageUri, setImageUri] = useState(route.params?.image || '');
-  const [category, setCategory] = useState(route.params?.category || '');
-  const [color, setColor] = useState(route.params?.color || '');
-  const [brand, setBrand] = useState(route.params?.brand || '');
-  const [season, setSeason] = useState(route.params?.season || '');
+
+  const [imageUri, setImageUri] = useState('');
+  const [category, setCategory] = useState('');
+  const [color, setColor] = useState('');
+  const [brand, setBrand] = useState('');
+  const [season, setSeason] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const resetForm = () => {
+    setImageUri('');
+    setCategory('');
+    setColor('');
+    setBrand('');
+    setSeason('');
+  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -42,6 +52,8 @@ export default function UploadScreen({ navigation, route }) {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       const base64Image = await FileSystem.readAsStringAsync(imageUri, {
         encoding: FileSystem.EncodingType.Base64,
@@ -49,7 +61,7 @@ export default function UploadScreen({ navigation, route }) {
 
       const clothingData = { user_id, image_data: base64Image, category, color, brand, season };
 
-      const response = await fetch('http://192.168.0.108:5000/upload', {
+      const response = await fetch('http://192.168.68.115:5000/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clothingData)
@@ -57,12 +69,30 @@ export default function UploadScreen({ navigation, route }) {
 
       const data = await response.json();
 
+      setIsLoading(false);
+
       if (response.ok) {
-        navigation.navigate('Confirmation', { ...clothingData, image: `http://192.168.0.108:5000${data.image_path}` });
+        Alert.alert(
+          "Success",
+          "Your item has been uploaded.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                resetForm();
+                navigation.navigate('Confirmation', {
+                  ...clothingData,
+                  image: `http://192.168.68.115:5000${data.image_path}`
+                });
+              }
+            }
+          ]
+        );
       } else {
         navigation.navigate('Retry', { ...clothingData });
       }
     } catch (error) {
+      setIsLoading(false);
       console.error("Upload error:", error);
       navigation.navigate('Retry', { user_id, image: imageUri, category, color, brand, season });
     }
@@ -70,12 +100,12 @@ export default function UploadScreen({ navigation, route }) {
 
   return (
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
-      <LinearGradient colors={['rgb(0,0,0,0.1)', 'rgba(0,0,0,0.7)']} style={styles.overlay}>
+      <View style={styles.overlay}>
         <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>Upload Item</Text>
 
           <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-            <FontAwesome name="image" size={20} color="#fff" />
+            <FontAwesome name="image" size={20} color="#F5F5DC" />
             <Text style={styles.pickerText}>Pick Image</Text>
           </TouchableOpacity>
 
@@ -88,11 +118,15 @@ export default function UploadScreen({ navigation, route }) {
           <TextInput placeholder="Brand" style={styles.input} placeholderTextColor="#ccc" value={brand} onChangeText={setBrand} />
           <TextInput placeholder="Season" style={styles.input} placeholderTextColor="#ccc" value={season} onChangeText={setSeason} />
 
-          <TouchableOpacity onPress={handleUpload} style={styles.uploadButton}>
-            <Text style={styles.uploadText}>Upload</Text>
-          </TouchableOpacity>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#F5F5DC" style={{ marginVertical: 20 }} />
+          ) : (
+            <TouchableOpacity onPress={handleUpload} style={styles.uploadButton}>
+              <Text style={styles.uploadText}>Upload</Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
-      </LinearGradient>
+      </View>
     </ImageBackground>
   );
 }
@@ -103,6 +137,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 24,
     justifyContent: 'center',
   },
@@ -112,7 +147,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    color: '#F5ECD7',
+    color: '#F5F5DC',
     textAlign: 'center',
     marginBottom: 30,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
@@ -120,31 +155,33 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderWidth: 1,
-    borderColor: '#666',
+    borderColor: '#F5F5DC',
     padding: 12,
     borderRadius: 10,
     color: '#fff',
     marginBottom: 15,
     fontSize: 15,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   imagePicker: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     paddingVertical: 12,
     justifyContent: 'center',
     borderRadius: 10,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#555',
+    borderColor: '#F5F5DC',
   },
   pickerText: {
     color: '#F5F5DC',
     marginLeft: 10,
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   previewImage: {
     width: 120,
@@ -156,20 +193,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   uploadButton: {
-    backgroundColor: '#3A3A3A',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
+    borderColor: '#F5F5DC',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
   },
   uploadText: {
-    color: '#EFE6DA',
+    color: '#F5F5DC',
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 1,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
 });

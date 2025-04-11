@@ -104,7 +104,7 @@ def signup():
         return jsonify({"error": "Internal server error"}), 500
 
     finally:
-        conn.close()  # ✅ Always release the database
+        conn.close()  # Always release the database
         
 @app.route('/upload', methods=['POST'])
 def upload_clothing():

@@ -6,7 +6,7 @@ export default function ConfirmationScreen({ route }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Upload Successful! ✅</Text>
+      <Text style={styles.title}>Upload Successful!</Text>
       <Image source={{ uri: image }} style={styles.image} />
       <Text>Category: {category}</Text>
       <Text>Color: {color}</Text>

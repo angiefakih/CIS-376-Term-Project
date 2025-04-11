@@ -6,7 +6,7 @@ export default function RetryScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Upload Failed ❌</Text>
+      <Text style={styles.title}>Upload Failed</Text>
       <Text>Please try again.</Text>
       <Button
         title="Try Again"

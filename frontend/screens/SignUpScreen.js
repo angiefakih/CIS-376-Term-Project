@@ -21,7 +21,7 @@ const backendHost =
     : Constants.expoConfig?.hostUri?.split(':')[0];
 const BACKEND_URL = `http://${backendHost}:5000`;
 
-import backgroundImage from '../assets/images/closetbackground.png';
+import backgroundImage from '../assets/images/loginbackground.jpg';
 
 export default function SignUpScreen() {
   const navigation = useNavigation();
@@ -57,7 +57,7 @@ export default function SignUpScreen() {
       setFirstName('');
       setLastName('');
       setGender('');
-      setMessage(null); // ✅ clear message when screen refocuses
+      setMessage(null); 
     }, [])
   );
 
