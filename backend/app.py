@@ -1,10 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import os
 import base64
 from datetime import datetime
-from flask import send_from_directory
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -26,12 +25,21 @@ def init_db():
             password TEXT
         );
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS clothing (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            image TEXT,
+            category TEXT,
+            color TEXT,
+            brand TEXT,
+            season TEXT
+        );
+    ''')
     conn.commit()
     conn.close()
 
-# Call this on startup
 init_db()
-
 CORS(app)
 
 def get_db_connection():
@@ -104,33 +112,27 @@ def signup():
         return jsonify({"error": "Internal server error"}), 500
 
     finally:
-        conn.close()  # Always release the database
-        
+        conn.close()
+
 @app.route('/upload', methods=['POST'])
 def upload_clothing():
     data = request.get_json()
-
-    
     user_id = data.get('user_id')
-    image_data = data.get('image_data')  # base64 string
+    image_data = data.get('image_data')
     category = data.get('category')
     color = data.get('color')
     brand = data.get('brand')
     season = data.get('season')
 
-    
-    print("Received data:", data)
-    print("User ID:", user_id)
-    print("Image length:", len(image_data) if image_data else 'None')
-    print("Category:", category, "Color:", color, "Brand:", brand, "Season:", season)
-
+    print("📦 Uploading clothing data...")
+    print("Received fields:", data)
 
     if not all([user_id, image_data, category, color, brand, season]):
-     return jsonify({'error': 'Missing required fields'}), 400
-
+        print("⚠️ Missing required fields")
+        return jsonify({'error': 'Missing required fields'}), 400
 
     try:
-        # Save image as file
+        # Save image
         filename = f"{user_id}_{datetime.utcnow().timestamp()}.jpg"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
 
@@ -139,21 +141,22 @@ def upload_clothing():
 
         image_path = f"/uploads/{filename}"
 
-        # Save clothing info to DB
+        # Insert into DB
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO clothing (user_id, image, category, color, brand, season) VALUES (?, ?, ?, ?, ?, ?)",
-            (user_id, image_path, category, color, brand, season)
-        )
+        cursor.execute("""
+            INSERT INTO clothing (user_id, image, category, color, brand, season)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (user_id, image_path, category, color, brand, season))
         conn.commit()
         conn.close()
 
-        return jsonify({'message': 'Item uploaded successfully', 'image_path': image_path})
-    except Exception as e:
-        print("Error during upload:", e)
-        return jsonify({'error': 'Server error'}), 500
+        print("✅ Upload success. Returning:", image_path)
+        return jsonify({'message': 'Item uploaded successfully', 'image_path': image_path}), 200
 
+    except Exception as e:
+        print("❌ Upload error:", e)
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route("/wardrobe/<int:user_id>", methods=["GET"])
 def get_wardrobe(user_id):
