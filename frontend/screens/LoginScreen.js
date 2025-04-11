@@ -19,7 +19,7 @@ const backendHost =
   Platform.OS === 'web'
     ? 'localhost'
     : Constants.expoConfig?.hostUri?.split(':')[0];
-const BACKEND_URL = `http://${backendHost}:5000`;
+    const BACKEND_URL = 'http://192.168.68.66:5001'; // ← use your actual IP here
 
 import backgroundImage from '../assets/images/loginbackground.jpg';
 

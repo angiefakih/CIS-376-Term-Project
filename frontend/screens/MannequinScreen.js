@@ -1,32 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome5 } from '@expo/vector-icons';
 import backgroundImage from '../assets/images/loginbackground.jpg'; 
 
 export default function MannequinScreen() {
+  const [showTop, setShowTop] = useState(false);
+
   return (
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
       <LinearGradient colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.8)']} style={styles.overlay}>
         <View style={styles.container}>
           <Text style={styles.title}>Style Your Mannequin</Text>
 
-          <Image
-            source={require('../assets/images/mannequin-placeholder.jpg')} 
-            style={styles.mannequin}
-          />
+          <View style={styles.mannequinWrapper}>
+            <Image
+              source={require('../assets/images/mannequin-placeholder.jpg')} 
+              style={styles.mannequin}
+            />
+            {showTop && (
+              <Image
+                source={require('../assets/images/shirt-overlay.png')} // Transparent shirt image
+                style={styles.clothing}
+              />
+            )}
+          </View>
 
-          <Text style={styles.subtitle}>Coming Soon</Text>
+          <Text style={styles.subtitle}>Tap a button to dress your mannequin</Text>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.styleButton}>
-              <FontAwesome5 name="tshirt" size={18} color="#fff" />
-              <Text style={styles.buttonText}>Add Top</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+  style={styles.styleButton}
+  onPress={() => console.log('Add Top pressed')}>
+  <FontAwesome5 name="tshirt" size={18} color="#fff" />
+  <Text style={styles.buttonText}>Add Top</Text>
+</TouchableOpacity>
+
+
+
             <TouchableOpacity style={styles.styleButton}>
               <FontAwesome5 name="shoe-prints" size={18} color="#fff" />
               <Text style={styles.buttonText}>Add Shoes</Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.styleButton}>
               <FontAwesome5 name="hat-cowboy" size={18} color="#fff" />
               <Text style={styles.buttonText}>Add Accessory</Text>
@@ -61,11 +77,23 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 30,
   },
-  mannequin: {
+  mannequinWrapper: {
+    position: 'relative',
     width: 180,
     height: 300,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mannequin: {
+    width: '100%',
+    height: '100%',
     resizeMode: 'contain',
-    marginBottom: 10,
+  },
+  clothing: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
   buttonContainer: {
     width: '100%',
