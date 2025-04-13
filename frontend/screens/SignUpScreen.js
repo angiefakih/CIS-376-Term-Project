@@ -82,17 +82,6 @@ export default function SignupScreen({ navigation }) {
             onChangeText={setLastName}
           />
 
-          <View style={styles.genderContainer}>
-            {['Female', 'Male', 'Other'].map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={[styles.genderButton, gender === option && styles.genderSelected]}
-                onPress={() => setGender(option)}
-              >
-                <Text style={styles.genderText}>{option}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
 
           <TextInput
             placeholder="Email"
@@ -158,27 +147,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
-  genderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  genderButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#F5F5DC',
-    backgroundColor: 'transparent',
-  },
-  genderSelected: {
-    backgroundColor: '#F5F5DC',
-  },
-  genderText: {
-    color: '#F5F5DC',
-    fontWeight: '600',
-    fontSize: 14,
-  },
+
+ 
   button: {
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     paddingVertical: 14,

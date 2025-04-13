@@ -153,7 +153,11 @@ export default function WardrobeScreen({ route, navigation }) {
             keyExtractor={(item) => item.id.toString()}
             numColumns={2}
             contentContainerStyle={styles.grid}
-            columnWrapperStyle={styles.columnWrapper}
+            columnWrapperStyle={{
+              justifyContent: 'space-between',
+              paddingTop: 0,      
+              marginTop: 0,       
+            }}
             renderItem={renderItem}
           />
         )}
@@ -190,7 +194,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   chipBar: {
-    marginBottom: 12,
+    marginBottom: 0,
+    //backgroundColor: 'rgba(255, 0, 0, 0.1)', // test only
   },
   chip: {
     paddingVertical: 6,
@@ -217,7 +222,11 @@ const styles = StyleSheet.create({
   },
   grid: {
     paddingBottom: 80,
+    paddingTop: 0, 
+    marginTop: 0,    
+    //backgroundColor: 'rgba(255, 0, 0, 0.1)', // optional test
   },
+  
   columnWrapper: {
     justifyContent: 'space-between',
   },
@@ -225,7 +234,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffffee',
     borderRadius: 12,
     padding: 15,
-    marginBottom: 15,
+    marginBottom: 8,
     alignItems: 'center',
     width: '48%',
     borderColor: '#ddd',
@@ -235,6 +244,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+
   },
   image: {
     width: 100,
