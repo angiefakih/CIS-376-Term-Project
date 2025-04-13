@@ -1,6 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, ScrollView, Image } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
+import PantsIcon from '../assets/icons/trousers.png';
+import JacketIcon from '../assets/icons/jacket.png';
+
+
+
 
 export default function MannequinScreen() {
   return (
@@ -10,20 +15,34 @@ export default function MannequinScreen() {
 
         <Text style={styles.subtitle}>Coming Soon</Text>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.styleButton}>
-            <FontAwesome5 name="tshirt" size={18} color="#3B3A39" />
-            <Text style={styles.buttonText}>Add Top</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.styleButton}>
-            <FontAwesome5 name="shoe-prints" size={18} color="#3B3A39" />
-            <Text style={styles.buttonText}>Add Shoes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.styleButton}>
-            <FontAwesome5 name="hat-cowboy" size={18} color="#3B3A39" />
-            <Text style={styles.buttonText}>Add Accessory</Text>
-          </TouchableOpacity>
-        </View>
+     <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.styleButton}>
+          <FontAwesome5 name="tshirt" size={18} color="#3B3A39" />
+          <Text style={styles.buttonText}>Add Top</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.styleButton}>
+           <Image source={PantsIcon} style={styles.icon} />
+          <Text style={styles.buttonText}>Add Bottoms</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.styleButton}>
+          <FontAwesome5 name="shoe-prints" size={18} color="#3B3A39" />
+          <Text style={styles.buttonText}>Add Shoes</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.styleButton}>
+          <Image source={JacketIcon} style={styles.icon} />
+          <Text style={styles.buttonText}>Add Outerwear</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.styleButton}>
+          <FontAwesome5 name="hat-cowboy" size={18} color="#3B3A39" />
+          <Text style={styles.buttonText}>Add Accessory</Text>
+        </TouchableOpacity>
+        
+      </View>
+
       </ScrollView>
     </View>
   );
@@ -32,7 +51,7 @@ export default function MannequinScreen() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    backgroundColor: '#F9F7F3', // Wardrobe-style solid background
+    backgroundColor: '#F9F7F3', 
   },
   container: {
     flexGrow: 1,
@@ -83,4 +102,12 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
+  icon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+    tintColor: '#3B3A39', 
+    resizeMode: 'contain',
+  },
+  
 });
