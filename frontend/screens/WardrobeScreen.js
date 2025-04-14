@@ -21,7 +21,7 @@ export default function WardrobeScreen({ route, navigation }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const user_id = route.params?.user_id;
 
-  const categories = ['All', 'Tops', 'Bottoms', 'Shoes', 'Accessories', 'Outerwear'];
+  const categories = ['All', 'Tops', 'Bottoms', 'Shoes'];
 
   useEffect(() => {
     fetch(`${API_URL}/wardrobe/${user_id}`)
@@ -136,6 +136,10 @@ export default function WardrobeScreen({ route, navigation }) {
   return (
     <SafeAreaView style={styles.background}>
       <View style={styles.container}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+      <Ionicons name="arrow-back" size={30} color="#3B3A39" />
+      </TouchableOpacity>
+
         <Text style={styles.title}>Your Wardrobe</Text>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipBar}>
@@ -188,7 +192,7 @@ const styles = StyleSheet.create({
     color: '#3B3A39',
     fontWeight: '700',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 60,
     marginBottom: 10,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     letterSpacing: 1.2,
@@ -199,7 +203,7 @@ const styles = StyleSheet.create({
   },
   chip: {
     paddingVertical: 6,
-    paddingHorizontal: 14,
+    paddingHorizontal: 26,
     borderRadius: 20,
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -289,4 +293,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 6,
   },
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 20 : 10,
+    left: 10,
+    padding: 10,
+    zIndex: 10,
+  },
+  
 });

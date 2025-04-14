@@ -121,8 +121,8 @@ export default function UploadScreen({ navigation, route }) {
         <View style={styles.overlay}>
           <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <FontAwesome name="arrow-left" size={20} color="#F5F5DC" />
-              <Text style={styles.backText}>Back</Text>
+              <FontAwesome name="arrow-left" size={28} color="#F5F5DC" />
+              
             </TouchableOpacity>
 
             <Text style={styles.title}>Upload Item</Text>
@@ -212,19 +212,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
   },
+  
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
     alignSelf: 'flex-start',
   },
-  backText: {
-    color: '#F5F5DC',
-    marginLeft: 8,
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-  },
+  
   title: {
     fontSize: 26,
     color: '#F5F5DC',

@@ -52,15 +52,15 @@ export default function MannequinScreen({ navigation }) {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.background}>
 
-        {/* 🔙 Back Button */}
+        {/* Back Button */}
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <FontAwesome5 name="arrow-left" size={20} color="#3B3A39" />
+          <FontAwesome5 name="arrow-left" size={24} color="#3B3A39" />
         </TouchableOpacity>
 
-        {/* 🔁 Undo Floating Button */}
+        {/* Undo Floating Button */}
         <TouchableOpacity
           style={styles.undoFloating}
           onPress={() => {
