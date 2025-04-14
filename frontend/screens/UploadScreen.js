@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import React, { useState } from 'react';
 import {
   View,
@@ -68,7 +69,7 @@ export default function UploadScreen({ navigation, route }) {
         season,
       };
 
-      const response = await fetch('http://192.168.68.131:5000/upload', {
+      const response = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clothingData),
@@ -88,7 +89,7 @@ export default function UploadScreen({ navigation, route }) {
               resetForm();
               navigation.navigate('Confirmation', {
                 ...clothingData,
-                image: `http://192.168.68.131:5000${data.image_path}`,
+                image: `${API_URL}${data.image_path}`,
               });
             },
           },

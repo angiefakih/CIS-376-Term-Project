@@ -1,3 +1,5 @@
+
+import { API_URL } from '../config';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -16,7 +18,7 @@ export default function WardrobeScreen({ route }) {
   const user_id = route.params?.user_id;
 
   useEffect(() => {
-    fetch(`http://192.168.68.131:5000/wardrobe/${user_id}`)
+    fetch(`${API_URL}/wardrobe/${user_id}`)
     .then(res => res.json())
       .then(data => {
         console.log("📦 Fetched wardrobe items:", data);
@@ -29,7 +31,7 @@ export default function WardrobeScreen({ route }) {
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <Image
-        source={{ uri:  `http://192.168.68.131:5000${item.image}` }}
+        source={{ uri:  `${API_URL}${item.image}` }}
         style={styles.image}
         onError={() => console.warn(`⚠️ Image failed to load: ${item.image}`)}
       />
