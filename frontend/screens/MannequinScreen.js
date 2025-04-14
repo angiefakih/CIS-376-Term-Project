@@ -77,7 +77,7 @@ export default function MannequinScreen({ navigation }) {
           <FontAwesome5 name="undo" size={18} color="#fff" />
         </TouchableOpacity>
 
-        {/* 🧍 Switch Mannequin Button */}
+        {/* Switch Mannequin Button */}
         <TouchableOpacity
           style={styles.switchButton}
           onPress={() => setIsMale(prev => !prev)}
@@ -85,12 +85,12 @@ export default function MannequinScreen({ navigation }) {
           <FontAwesome5 name="venus-mars" size={16} color="#fff" />
         </TouchableOpacity>
 
-        {/* 🧍 Title */}
+        {/* Title */}
         <View style={styles.header}>
           <Text style={styles.title}>Style your Mannequin</Text>
         </View>
 
-        {/* 🧍 Mannequin + Clothes */}
+        {/* Mannequin + Clothes */}
         <View style={styles.mannequinContainer}>
           <Image
             source={isMale ? require('../assets/images/male.png') : require('../assets/images/female.png')}
@@ -107,7 +107,7 @@ export default function MannequinScreen({ navigation }) {
           )}
         </View>
 
-        {/* 👕 👖 👟 Bottom Buttons */}
+        {/* Bottom Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.styleButton}
@@ -143,7 +143,7 @@ export default function MannequinScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* 📦 Modal Picker */}
+        {/* Modal Picker */}
         <Modal visible={isModalVisible} transparent={true} animationType="slide">
           <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
             <View style={styles.modalOverlay}>
