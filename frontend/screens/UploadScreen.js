@@ -30,16 +30,14 @@ export default function UploadScreen({ navigation, route }) {
   const [brand, setBrand] = useState('');
   const [season, setSeason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  // Dropdown
-  const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState(null);
-  const [categoryItems, setCategoryItems] = useState([
-    { label: 'Tops', value: 'Tops' },
-    { label: 'Bottoms', value: 'Bottoms' },
-    { label: 'Shoes', value: 'Shoes' },
-    { label: 'Accessories', value: 'Accessories' },
-  ]);
+    const [open, setOpen] = useState(false);
+    const [category, setCategory] = useState(null);
+    const [categoryItems, setCategoryItems] = useState([
+      { label: 'Tops', value: 'Tops' },
+      { label: 'Bottoms', value: 'Bottoms' },
+      { label: 'Shoes', value: 'Shoes' },
+      { label: 'Accessories', value: 'Accessories' },
+    ]);
 
   const resetForm = () => {
     setImageUri('');
@@ -98,12 +96,16 @@ export default function UploadScreen({ navigation, route }) {
             text: "OK",
             onPress: () => {
               resetForm();
-              navigation.navigate('Wardrobe', { user_id });
+              navigation.navigate('Wardrobe', {user_id,
+                ...clothingData,
+                image: `${API_URL}${data.image_path}`,
+              });
             },
           },
         ]);
       } else {
         Alert.alert("Upload failed", data.error || "Something went wrong.");
+       
       }
     } catch (error) {
       setIsLoading(false);
@@ -113,82 +115,82 @@ export default function UploadScreen({ navigation, route }) {
 
   return (
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
-      <View style={styles.overlay}>
-        {/* Header, Image, and DropDownPicker OUTSIDE Scroll View */}
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <FontAwesome name="arrow-left" size={28} color="#F5F5DC" />
-        </TouchableOpacity>
-  
-        <Text style={styles.title}>Upload Item</Text>
-  
-        <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-          <FontAwesome name="image" size={20} color="#F5F5DC" />
-          <Text style={styles.pickerText}>Pick Image</Text>
-        </TouchableOpacity>
-  
-        {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
-  
-        {/* DROP DOWN PICKER OUTSIDE ScrollView */}
-        <View style={{ zIndex: 1000, marginBottom: 20 }}>
-          <DropDownPicker
-            open={open}
-            value={category}
-            items={categoryItems}
-            setOpen={setOpen}
-            setValue={setCategory}
-            setItems={setCategoryItems}
-            placeholder="Select a category..."
-            style={styles.dropdown}
-            dropDownContainerStyle={styles.dropdownContainer}
-            placeholderStyle={styles.placeholderStyle}
-            textStyle={styles.pickerText}
-            arrowIconStyle={{ tintColor: '#F5F5DC' }}
-          />
-        </View>
-  
-        {/* SCROLLABLE INPUT FIELDS */}
-        <KeyboardAwareScrollView
-          contentContainerStyle={styles.scrollContainer}
-          enableOnAndroid={true}
-          keyboardShouldPersistTaps="handled"
-          extraScrollHeight={30}
-          showsVerticalScrollIndicator={false}
-        >
-          <TextInput
-            placeholder="Color"
-            style={styles.input}
-            placeholderTextColor="#ccc"
-            value={color}
-            onChangeText={setColor}
-          />
-          <TextInput
-            placeholder="Brand"
-            style={styles.input}
-            placeholderTextColor="#ccc"
-            value={brand}
-            onChangeText={setBrand}
-          />
-          <TextInput
-            placeholder="Season"
-            style={styles.input}
-            placeholderTextColor="#ccc"
-            value={season}
-            onChangeText={setSeason}
-          />
-  
-          {isLoading ? (
-            <ActivityIndicator size="large" color="#F5F5DC" style={{ marginVertical: 20 }} />
-          ) : (
-            <TouchableOpacity onPress={handleUpload} style={styles.uploadButton}>
-              <Text style={styles.uploadText}>Upload</Text>
+        <View style={styles.overlay}>
+                      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <FontAwesome name="arrow-left" size={28} color="#F5F5DC" />
+              
             </TouchableOpacity>
-          )}
-        </KeyboardAwareScrollView>
-      </View>
+
+            <Text style={styles.title}>Upload Item</Text>
+
+            <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+              <FontAwesome name="image" size={20} color="#F5F5DC" />
+              <Text style={styles.pickerText}>Pick Image</Text>
+            </TouchableOpacity>
+
+            {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
+
+            
+       {/* DROP DOWN PICKER OUTSIDE ScrollView */}
+              <View style={{ zIndex: 1000, marginBottom: 20 }}>
+                <DropDownPicker
+                  open={open}
+                  value={category}
+                  items={categoryItems}
+                  setOpen={setOpen}
+                  setValue={setCategory}
+                  setItems={setCategoryItems}
+                  placeholder="Select a category..."
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  placeholderStyle={styles.placeholderStyle}
+                  textStyle={styles.pickerText}
+                  arrowIconStyle={{ tintColor: '#F5F5DC' }}
+                />
+              </View>
+
+
+          {/* SCROLLABLE INPUT FIELDS */}
+                  <KeyboardAwareScrollView
+                    contentContainerStyle={styles.scrollContainer}
+                    enableOnAndroid={true}
+                    keyboardShouldPersistTaps="handled"
+                    extraScrollHeight={30}
+                    showsVerticalScrollIndicator={false}
+                    >
+            <TextInput
+              placeholder="Color"
+              style={styles.input}
+              placeholderTextColor="#ccc"
+              value={color}
+              onChangeText={setColor}
+            />
+            <TextInput
+              placeholder="Brand"
+              style={styles.input}
+              placeholderTextColor="#ccc"
+              value={brand}
+              onChangeText={setBrand}
+            />
+            <TextInput
+              placeholder="Season"
+              style={styles.input}
+              placeholderTextColor="#ccc"
+              value={season}
+              onChangeText={setSeason}
+            />
+
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#F5F5DC" style={{ marginVertical: 20 }} />
+            ) : (
+              <TouchableOpacity onPress={handleUpload} style={styles.uploadButton}>
+                <Text style={styles.uploadText}>Upload</Text>
+              </TouchableOpacity>
+            )}
+          </KeyboardAwareScrollView>
+        </View>
     </ImageBackground>
   );
-  
-  
 }
 
 const styles = StyleSheet.create({
@@ -219,6 +221,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     alignSelf: 'flex-start',
   },
+  
   title: {
     fontSize: 26,
     color: '#F5F5DC',
@@ -263,7 +266,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 10,
     color: '#fff',
-    marginBottom: 12,
+    marginBottom: 12, 
     fontSize: 16,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },

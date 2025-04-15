@@ -16,3 +16,4 @@ else if (Constants.expoConfig?.hostUri) {
 // }
 
 export const API_URL = `http://${LOCAL_IP}:5000`;
+console.log("🌐 API_URL:", API_URL);

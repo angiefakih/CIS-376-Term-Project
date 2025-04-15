@@ -20,7 +20,6 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             first_name TEXT,
             last_name TEXT,
-            gender TEXT,
             email TEXT UNIQUE,
             password TEXT
         );
@@ -92,14 +91,13 @@ def signup():
 
     try:
         cursor.execute("""
-            INSERT INTO users (email, password, first_name, last_name, gender)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO users (email, password, first_name, last_name)
+            VALUES (?, ?, ?, ?)
         """, (
             data['email'],
             data['password'],
             data['first_name'],
-            data['last_name'],
-            data['gender']
+            data['last_name']
         ))
         conn.commit()
         return jsonify({"message": "Account created successfully"}), 201
@@ -186,16 +184,14 @@ def delete_clothing_item(item_id):
             image_path = row[0]  # Assuming 'image' column holds the path like '/uploads/myimage.jpg'
 
             # Build full path
-            # Always delete .png version
-            basename = os.path.splitext(os.path.basename(image_path))[0]  # filename without extension
-            png_path = os.path.join(UPLOAD_FOLDER, f"{basename}.png")
+            full_image_path = os.path.abspath(os.path.join(UPLOAD_FOLDER, os.path.basename(image_path)))
 
             # Delete image from folder
-            if os.path.exists(png_path):
-                print("Deleting image at:", png_path)
-                os.remove(png_path)
+            if os.path.exists(full_image_path):
+                print("Deleting image at:", full_image_path)
+                os.remove(full_image_path)
             else:
-                print("Image not found at:", png_path)
+                print("Image not found at:", full_image_path)
                 
         cursor.execute("DELETE FROM clothing WHERE id = ?", (item_id,))
         conn.commit()
@@ -205,6 +201,45 @@ def delete_clothing_item(item_id):
         print("Delete error:", e)
         return jsonify({'error': 'Failed to delete item'}), 500
 
+@app.route('/get_user_clothing/<int:user_id>/<category>', methods=['GET'])
+def get_user_clothing(user_id, category):
+    conn = get_db_connection()
+    items = conn.execute('SELECT * FROM clothing WHERE user_id = ? AND category = ?', (user_id, category)).fetchall()
+    conn.close()
+
+    clothing_list = [dict(item) for item in items]
+    return jsonify(clothing_list)
+
+@app.route('/plan-outfit', methods=['POST'])
+def plan_outfit():
+    data = request.get_json()
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO planned_outfits (user_id, top, bottom, shoes, occasion, date)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (
+        data['user_id'],
+        data.get('top'),
+        data.get('bottom'),
+        data.get('shoes'),
+        data['occasion'],
+        data.get('date')
+    ))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Outfit saved successfully"}), 201
+
+@app.route('/planned-outfits/<int:user_id>', methods=['GET'])
+def get_planned_outfits(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM planned_outfits WHERE user_id = ?", (user_id,))
+    outfits = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(outfits)
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ export default function HomeScreen({ navigation, route }) {
               <Text style={styles.gridText}>View Wardrobe</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate('Mannequin')}>
+            <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate('Mannequin', {user_id})}>
               <MaterialCommunityIcons name="human-female" size={22} color="#F5F3EF" />
               <Text style={styles.gridText}>Style Mannequin</Text>
             </TouchableOpacity>

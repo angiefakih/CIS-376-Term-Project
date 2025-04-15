@@ -6,9 +6,17 @@ import {
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { GestureHandlerRootView, PinchGestureHandler } from 'react-native-gesture-handler';
-import PantsIcon from '../assets/icons/trousers.png';
+import PantsIcon from '../assets/icons/trousers.png';import Constants from 'expo-constants';
 
-export default function MannequinScreen({ navigation }) {
+const { manifest2, manifest } = Constants;
+const backendHost = Platform.OS === 'web'
+  ? 'localhost'
+  : Constants.expoConfig?.hostUri?.split(':')[0];
+const BACKEND_URL = `http://${backendHost}:5000`;
+
+
+export default function MannequinScreen({ navigation, route }) {
+  const { user_id } = route.params;
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [actionHistory, setActionHistory] = useState([]);
@@ -16,6 +24,7 @@ export default function MannequinScreen({ navigation }) {
   const [selectedClothes, setSelectedClothes] = useState({
     top: null, bottom: null, shoes: null, accessories: null, 
   });
+  const [clothingItems, setClothingItems] = useState([]);
 
   const clothesData = {
     top: [
@@ -79,6 +88,20 @@ export default function MannequinScreen({ navigation }) {
     setModalVisible(false);
   };
 
+  const fetchClothing = async (category) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/get_user_clothing/${user_id}/${category}`);
+      const data = await response.json();
+      const fullData = data.map(item => ({
+        ...item,
+        image_path: `${BACKEND_URL}${item.image}?${Date.now()}`,
+      }));
+      setClothingItems(fullData);      
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
@@ -211,23 +234,31 @@ export default function MannequinScreen({ navigation }) {
           {/* Buttons */}
           <View style={styles.buttonContainer}>
           {['top', 'bottom', 'shoes', 'accessories'].map((type) => (
-  <TouchableOpacity
-    key={type}
-    style={styles.styleButton}
-    onPress={() => {
-      setSelectedCategory(type);
-      setModalVisible(true);
-    }}
-  >
-    {type === 'top' && <FontAwesome5 name="tshirt" size={18} color="#3B3A39" />}
-    {type === 'bottom' && <Image source={PantsIcon} style={styles.icon} />}
-    {type === 'shoes' && <FontAwesome5 name="shoe-prints" size={18} color="#3B3A39" />}
-    {type === 'accessories' && <FontAwesome5 name="glasses" size={18} color="#3B3A39" />}
-    <Text style={styles.buttonText}>
-      {type.charAt(0).toUpperCase() + type.slice(1)}
-    </Text>
-  </TouchableOpacity>
-))}
+            <TouchableOpacity
+              key={type}
+              style={styles.styleButton}
+              onPress={() => {
+                setSelectedCategory(type);
+                
+                const categoryMap = {
+                  top: 'Tops',
+                  bottom: 'Bottoms',
+                  shoes: 'Shoes',
+                  accessories: 'Accessories',
+                };
+                fetchClothing(categoryMap[type]);
+                setModalVisible(true);
+              }}
+            >
+              {type === 'top' && <FontAwesome5 name="tshirt" size={18} color="#3B3A39" />}
+              {type === 'bottom' && <Image source={PantsIcon} style={styles.icon} />}
+              {type === 'shoes' && <FontAwesome5 name="shoe-prints" size={18} color="#3B3A39" />}
+              {type === 'accessories' && <FontAwesome5 name="glasses" size={18} color="#3B3A39" />}
+              <Text style={styles.buttonText}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
 
 
           </View>
@@ -246,11 +277,22 @@ export default function MannequinScreen({ navigation }) {
                     </View>
                     <FlatList
                       horizontal
-                      data={clothesData[selectedCategory] || []}
+                      data={clothingItems}
                       keyExtractor={(item) => item.id.toString()}
                       renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() => handleSelectClothing(item)}>
-                          <Image source={item.image} style={styles.clothingOption} />
+                        <TouchableOpacity onPress={() => handleSelectClothing(
+                          item.image_path
+                            ? { image: { uri: item.image_path } }
+                            : item
+                        )}>
+                          <Image
+                            source={
+                              item.image
+                                ? item.image
+                                : { uri: item.image_path }
+                            }
+                            style={styles.clothingOption}
+                          />
                         </TouchableOpacity>
                       )}
                     />
