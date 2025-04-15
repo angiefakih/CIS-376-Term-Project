@@ -15,23 +15,35 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import DropDownPicker from 'react-native-dropdown-picker';
 import { FontAwesome } from '@expo/vector-icons';
 import backgroundImage from '../assets/images/loginbackground.jpg';
 import { API_URL } from '../config';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
 
 export default function UploadScreen({ navigation, route }) {
   const user_id = route.params?.user_id;
 
   const [imageUri, setImageUri] = useState('');
-  const [category, setCategory] = useState('');
   const [color, setColor] = useState('');
   const [brand, setBrand] = useState('');
   const [season, setSeason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Dropdown
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState(null);
+  const [categoryItems, setCategoryItems] = useState([
+    { label: 'Tops', value: 'Tops' },
+    { label: 'Bottoms', value: 'Bottoms' },
+    { label: 'Shoes', value: 'Shoes' },
+    { label: 'Accessories', value: 'Accessories' },
+  ]);
+
   const resetForm = () => {
     setImageUri('');
-    setCategory('');
+    setCategory(null);
     setColor('');
     setBrand('');
     setSeason('');
@@ -86,115 +98,97 @@ export default function UploadScreen({ navigation, route }) {
             text: "OK",
             onPress: () => {
               resetForm();
-              navigation.navigate('Confirmation', {
-                ...clothingData,
-                image: `${API_URL}${data.image_path}`,
-              });
+              navigation.navigate('Wardrobe', { user_id });
             },
           },
         ]);
       } else {
         Alert.alert("Upload failed", data.error || "Something went wrong.");
-        navigation.navigate('Retry', { ...clothingData });
       }
     } catch (error) {
       setIsLoading(false);
       Alert.alert("Error", error.message || "Failed to upload.");
-      navigation.navigate('Retry', {
-        user_id,
-        image: imageUri,
-        category,
-        color,
-        brand,
-        season,
-      });
     }
   };
 
   return (
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={80}
-      >
-        <View style={styles.overlay}>
-          <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <FontAwesome name="arrow-left" size={28} color="#F5F5DC" />
-              
-            </TouchableOpacity>
-
-            <Text style={styles.title}>Upload Item</Text>
-
-            <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-              <FontAwesome name="image" size={20} color="#F5F5DC" />
-              <Text style={styles.pickerText}>Pick Image</Text>
-            </TouchableOpacity>
-
-            {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
-
-            <View style={styles.fieldGroup}>
-              <View style={styles.radioGroup}>
-              <Text style={styles.radioGroupLabel}>Category</Text>
-              <View style={styles.radioOptions}>
-                {['Tops', 'Bottoms', 'Shoes'].map((option) => (
-                  <TouchableOpacity
-                    key={option}
-                    onPress={() => setCategory(option)}
-                    style={[
-                      styles.radioButton,
-                      category === option && styles.radioButtonSelected,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.radioText,
-                        category === option && styles.radioTextSelected,
-                      ]}
-                    >
-                      {option}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-</View>
-            <TextInput
-              placeholder="Color"
-              style={styles.input}
-              placeholderTextColor="#ccc"
-              value={color}
-              onChangeText={setColor}
-            />
-            <TextInput
-              placeholder="Brand"
-              style={styles.input}
-              placeholderTextColor="#ccc"
-              value={brand}
-              onChangeText={setBrand}
-            />
-            <TextInput
-              placeholder="Season"
-              style={styles.input}
-              placeholderTextColor="#ccc"
-              value={season}
-              onChangeText={setSeason}
-            />
-
-            {isLoading ? (
-              <ActivityIndicator size="large" color="#F5F5DC" style={{ marginVertical: 20 }} />
-            ) : (
-              <TouchableOpacity onPress={handleUpload} style={styles.uploadButton}>
-                <Text style={styles.uploadText}>Upload</Text>
-              </TouchableOpacity>
-            )}
-          </ScrollView>
+      <View style={styles.overlay}>
+        {/* Header, Image, and DropDownPicker OUTSIDE Scroll View */}
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <FontAwesome name="arrow-left" size={28} color="#F5F5DC" />
+        </TouchableOpacity>
+  
+        <Text style={styles.title}>Upload Item</Text>
+  
+        <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+          <FontAwesome name="image" size={20} color="#F5F5DC" />
+          <Text style={styles.pickerText}>Pick Image</Text>
+        </TouchableOpacity>
+  
+        {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
+  
+        {/* DROP DOWN PICKER OUTSIDE ScrollView */}
+        <View style={{ zIndex: 1000, marginBottom: 20 }}>
+          <DropDownPicker
+            open={open}
+            value={category}
+            items={categoryItems}
+            setOpen={setOpen}
+            setValue={setCategory}
+            setItems={setCategoryItems}
+            placeholder="Select a category..."
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            placeholderStyle={styles.placeholderStyle}
+            textStyle={styles.pickerText}
+            arrowIconStyle={{ tintColor: '#F5F5DC' }}
+          />
         </View>
-      </KeyboardAvoidingView>
+  
+        {/* SCROLLABLE INPUT FIELDS */}
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.scrollContainer}
+          enableOnAndroid={true}
+          keyboardShouldPersistTaps="handled"
+          extraScrollHeight={30}
+          showsVerticalScrollIndicator={false}
+        >
+          <TextInput
+            placeholder="Color"
+            style={styles.input}
+            placeholderTextColor="#ccc"
+            value={color}
+            onChangeText={setColor}
+          />
+          <TextInput
+            placeholder="Brand"
+            style={styles.input}
+            placeholderTextColor="#ccc"
+            value={brand}
+            onChangeText={setBrand}
+          />
+          <TextInput
+            placeholder="Season"
+            style={styles.input}
+            placeholderTextColor="#ccc"
+            value={season}
+            onChangeText={setSeason}
+          />
+  
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#F5F5DC" style={{ marginVertical: 20 }} />
+          ) : (
+            <TouchableOpacity onPress={handleUpload} style={styles.uploadButton}>
+              <Text style={styles.uploadText}>Upload</Text>
+            </TouchableOpacity>
+          )}
+        </KeyboardAwareScrollView>
+      </View>
     </ImageBackground>
   );
+  
+  
 }
 
 const styles = StyleSheet.create({
@@ -212,6 +206,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
   },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+    paddingBottom: 30,
+  },
+  
   
   backButton: {
     flexDirection: 'row',
@@ -219,7 +219,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     alignSelf: 'flex-start',
   },
-  
   title: {
     fontSize: 26,
     color: '#F5F5DC',
@@ -261,13 +260,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F5F5DC',
     paddingHorizontal: 12,
-    paddingVertical: 20,
+    paddingVertical: 16,
     borderRadius: 10,
     color: '#fff',
-    marginBottom: 20, 
+    marginBottom: 12,
     fontSize: 16,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    width: '100%',
+  },
+  dropdown: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderColor: '#F5F5DC',
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  dropdownContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderColor: '#F5F5DC',
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  placeholderStyle: {
+    color: '#ccc',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   uploadButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -289,59 +303,4 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
-  fieldGroup: {
-    marginBottom: 20,
-  },
-  
-  radioGroup: {
-    marginBottom: 20,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderColor: '#F5F5DC',
-    borderWidth: 1,
-    padding: 12,
-  },
-  
-  radioGroupLabel: {
-    color: '#F5F5DC',
-    fontSize: 16,
-    marginBottom: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    fontWeight: '600',
-    letterSpacing: 0.5,
-  },
-  
-  radioOptions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  
-  radioButton: {
-    flex: 1,
-    marginHorizontal: 4,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderWidth: 1,
-    borderColor: '#F5F5DC',
-  },
-  
-  radioButtonSelected: {
-    backgroundColor: '#F5F5DC',
-  },
-  
-  radioText: {
-    color: '#F5F5DC',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  
-  radioTextSelected: {
-    color: '#000',
-  },
-  
-  
-  
 });

@@ -14,24 +14,31 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { API_URL } from '../config'; 
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+
 
 export default function WardrobeScreen({ route, navigation }) {
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const isSingleRow = filteredItems.length > 0 && filteredItems.length <= 2;
   const user_id = route.params?.user_id;
 
-  const categories = ['All', 'Tops', 'Bottoms', 'Shoes'];
+  const categories = ['All', 'Tops', 'Bottoms', 'Shoes', 'Accessories'];
 
-  useEffect(() => {
-    fetch(`${API_URL}/wardrobe/${user_id}`)
-      .then(res => res.json())
-      .then(data => {
-        setItems(data);
-        setFilteredItems(data);
-      })
-      .catch(err => console.error(err));
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetch(`${API_URL}/wardrobe/${user_id}`)
+        .then(res => res.json())
+        .then(data => {
+          setItems(data);
+          setFilteredItems(data);
+        })
+        .catch(err => console.error(err));
+    }, [user_id])
+  );
+  
 
   const handleFilter = (category) => {
     setSelectedCategory(category);
@@ -43,10 +50,6 @@ export default function WardrobeScreen({ route, navigation }) {
       );
       setFilteredItems(filtered);
     }
-  };
-
-  const handleEdit = (item) => {
-    navigation.navigate('Upload', { ...item, image: `${API_URL}${item.image}`, user_id });
   };
 
   const handleDelete = (itemId) => {
@@ -68,7 +71,8 @@ export default function WardrobeScreen({ route, navigation }) {
               });
               const updatedItems = items.filter(item => item.id !== itemId);
               setItems(updatedItems);
-              handleFilter(selectedCategory); // reapply filter
+              const updatedFiltered = filteredItems.filter(item => item.id !== itemId);
+              setFilteredItems(updatedFiltered);
             } catch (err) {
               console.error('Delete failed:', err);
               Alert.alert('Error', 'Failed to delete item.');
@@ -136,35 +140,33 @@ export default function WardrobeScreen({ route, navigation }) {
   return (
     <SafeAreaView style={styles.background}>
       <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-      <Ionicons name="arrow-back" size={30} color="#3B3A39" />
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={30} color="#3B3A39" />
+        </TouchableOpacity>
 
         <Text style={styles.title}>Your Wardrobe</Text>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipBar}>
-          {categories.map(renderChip)}
-        </ScrollView>
+        <View style={{ flexGrow: 1 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipBar}>
+            {categories.map(renderChip)}
+          </ScrollView>
 
-        {filteredItems.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>Your wardrobe is empty.</Text>
-            <Text style={styles.emptyText}>Tap the ➕ button to add your first item.</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={filteredItems}
-            keyExtractor={(item) => item.id.toString()}
-            numColumns={2}
-            contentContainerStyle={styles.grid}
-            columnWrapperStyle={{
-              justifyContent: 'space-between',
-              paddingTop: 0,      
-              marginTop: 0,       
-            }}
-            renderItem={renderItem}
-          />
-        )}
+          {filteredItems.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>Your wardrobe is empty.</Text>
+              <Text style={styles.emptyText}>Tap the ➕ button to add your first item.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredItems}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={2}
+              contentContainerStyle={styles.flatListContent}
+              columnWrapperStyle={styles.columnWrapper}
+              renderItem={renderItem}
+            />
+          )}
+        </View>
 
         <TouchableOpacity
           style={styles.fab}
@@ -198,12 +200,13 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   chipBar: {
-    marginBottom: 0,
-    //backgroundColor: 'rgba(255, 0, 0, 0.1)', // test only
+    marginBottom: 8,
+    paddingVertical: 2,
+    paddingHorizontal: 5,
   },
   chip: {
     paddingVertical: 6,
-    paddingHorizontal: 26,
+    paddingHorizontal: 20,
     borderRadius: 20,
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -224,15 +227,18 @@ const styles = StyleSheet.create({
   chipTextSelected: {
     color: '#fff',
   },
-  grid: {
-    paddingBottom: 80,
-    paddingTop: 0, 
-    marginTop: 0,    
-    //backgroundColor: 'rgba(255, 0, 0, 0.1)', // optional test
+
+  flatListContent: {
+    paddingTop: 10,
+    paddingBottom: 100,
+    paddingHorizontal: 2,
+    gap: 10,
   },
-  
+
   columnWrapper: {
     justifyContent: 'space-between',
+    marginBottom: 10,
+  
   },
   card: {
     backgroundColor: '#ffffffee',
@@ -248,7 +254,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-
   },
   image: {
     width: 100,
@@ -300,5 +305,4 @@ const styles = StyleSheet.create({
     padding: 10,
     zIndex: 10,
   },
-  
 });

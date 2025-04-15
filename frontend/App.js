@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import HomeScreen from './screens/HomeScreen';
@@ -9,8 +9,7 @@ import UploadScreen from './screens/UploadScreen';
 import WardrobeScreen from './screens/WardrobeScreen';
 import MannequinScreen from './screens/MannequinScreen';
 import PlanOutfitScreen from './screens/PlanOutfitScreen';
-import ConfirmationScreen from './screens/ConfirmationScreen';
-import RetryScreen from './screens/RetryScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -25,8 +24,6 @@ export default function App() {
         <Stack.Screen name="Wardrobe" component={WardrobeScreen} />
         <Stack.Screen name="Mannequin" component={MannequinScreen} />
         <Stack.Screen name="PlanOutfit" component={PlanOutfitScreen} />
-        <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
-        <Stack.Screen name="Retry" component={RetryScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

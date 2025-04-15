@@ -177,6 +177,26 @@ def delete_clothing_item(item_id):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Get image path of item to delete
+        cursor.execute("SELECT image FROM clothing WHERE id = ?", (item_id,))
+        row = cursor.fetchone()
+
+        if row:
+            image_path = row[0]  # Assuming 'image' column holds the path like '/uploads/myimage.jpg'
+
+            # Build full path
+            # Always delete .png version
+            basename = os.path.splitext(os.path.basename(image_path))[0]  # filename without extension
+            png_path = os.path.join(UPLOAD_FOLDER, f"{basename}.png")
+
+            # Delete image from folder
+            if os.path.exists(png_path):
+                print("Deleting image at:", png_path)
+                os.remove(png_path)
+            else:
+                print("Image not found at:", png_path)
+                
         cursor.execute("DELETE FROM clothing WHERE id = ?", (item_id,))
         conn.commit()
         conn.close()
@@ -184,6 +204,7 @@ def delete_clothing_item(item_id):
     except Exception as e:
         print("Delete error:", e)
         return jsonify({'error': 'Failed to delete item'}), 500
+
 
 
 if __name__ == "__main__":
