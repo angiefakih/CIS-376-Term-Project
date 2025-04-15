@@ -17,3 +17,19 @@ CREATE TABLE IF NOT EXISTS clothing (
     season TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
+
+CREATE TABLE IF NOT EXISTS planned_outfits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    top TEXT,
+    bottom TEXT,
+    shoes TEXT,
+    occasion TEXT NOT NULL,
+    date TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+
+
+

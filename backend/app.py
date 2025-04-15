@@ -3,7 +3,9 @@ from flask_cors import CORS
 import sqlite3
 import os
 import base64
+import json
 from datetime import datetime
+
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -36,6 +38,19 @@ def init_db():
             season TEXT
         );
     ''')
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS planned_outfits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        top TEXT,
+        bottom TEXT,
+        shoes TEXT,
+        occasion TEXT NOT NULL,
+        date TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+''')
+
     conn.commit()
     conn.close()
 
@@ -170,6 +185,74 @@ def get_wardrobe(user_id):
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+
+@app.route('/get_user_clothing/<int:user_id>/<category>', methods=['GET'])
+def get_user_clothing(user_id, category):
+    try:
+        conn = get_db_connection()
+        items = conn.execute(
+            'SELECT * FROM clothing WHERE user_id = ? AND LOWER(category) = LOWER(?)',
+            (user_id, category)
+        ).fetchall()
+        conn.close()
+
+        clothing_list = [dict(item) for item in items]
+        return jsonify(clothing_list)
+    except Exception as e:
+        print("Error in get_user_clothing:", e)
+        return jsonify({'error': 'Something went wrong'}), 500
+
+
+
+@app.route("/wardrobe/<int:item_id>", methods=["DELETE"])
+def delete_clothing_item(item_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM clothing WHERE id = ?", (item_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Item deleted successfully'})
+    except Exception as e:
+        print("Delete error:", e)
+        return jsonify({'error': 'Failed to delete item'}), 500
+    
+
+@app.route('/plan-outfit', methods=['POST'])
+def plan_outfit():
+    data = request.get_json()
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO planned_outfits (user_id, top, bottom, shoes, occasion, date)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (
+        data['user_id'],
+        data.get('top'),
+        data.get('bottom'),
+        data.get('shoes'),
+        data['occasion'],
+        data.get('date')
+    ))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Outfit saved successfully"}), 201
+
+
+    
+# Add to your backend (app.py)
+@app.route('/planned-outfits/<int:user_id>', methods=['GET'])
+def get_planned_outfits(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM planned_outfits WHERE user_id = ?", (user_id,))
+    outfits = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(outfits)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
