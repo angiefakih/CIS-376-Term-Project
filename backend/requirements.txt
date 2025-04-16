@@ -1,0 +1,5 @@
+flask
+flask-cors
+sqlite3; sys_platform != 'win32'
+python-dotenv
+requests
