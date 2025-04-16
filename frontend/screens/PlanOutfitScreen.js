@@ -14,6 +14,8 @@ import { useIsFocused } from '@react-navigation/native';
 import { API_URL } from '../config';
 
 export default function PlanOutfitScreen({ route, navigation }) {
+  
+
   const user_id = route.params?.user_id;
   const [plannedOutfits, setPlannedOutfits] = useState([]);
   const isFocused = useIsFocused();
@@ -66,7 +68,8 @@ export default function PlanOutfitScreen({ route, navigation }) {
   };
 
   const renderOutfit = ({ item }) => {
-    
+    console.log("👕 top URI:", item.top?.uri);
+
     return (
       <TouchableOpacity
         onPress={() => {

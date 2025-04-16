@@ -267,6 +267,7 @@ def plan_outfit():
 
     
 @app.route('/planned-outfits/<int:user_id>', methods=['GET'])
+
 def get_planned_outfits(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
