@@ -1,12 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef,useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Image, Modal,
   FlatList, SafeAreaView, TouchableWithoutFeedback,
-  Animated, PanResponder, Platform
+  Animated, PanResponder, Platform, TextInput 
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { GestureHandlerRootView, PinchGestureHandler } from 'react-native-gesture-handler';
 import PantsIcon from '../assets/icons/trousers.png';import Constants from 'expo-constants';
+import { Alert } from 'react-native'; 
+import DateTimePicker from '@react-native-community/datetimepicker';
+
 
 const { manifest2, manifest } = Constants;
 const backendHost = Platform.OS === 'web'
@@ -25,6 +28,9 @@ export default function MannequinScreen({ navigation, route }) {
     top: null, bottom: null, shoes: null, accessories: null, 
   });
   const [clothingItems, setClothingItems] = useState([]);
+  const [occasion, setOccasion] = useState('');
+  const [date, setDate] = useState('');
+  const [planModalVisible, setPlanModalVisible] = useState(false);
 
   const clothesData = {
     top: [
@@ -38,6 +44,42 @@ export default function MannequinScreen({ navigation, route }) {
       { id: 4, image: require('../assets/images/shoes1.png') },
     ],
   };
+
+  useEffect(() => {
+    if (route.params?.outfit) {
+      const outfit = route.params.outfit;
+  
+      if (outfit.top?.uri) {
+        setSelectedClothes(prev => ({ ...prev, top: { uri: outfit.top.uri } }));
+        top.translateX.setValue(outfit.top.x || 75);
+        top.translateY.setValue(outfit.top.y || 130);
+        top.scale.setValue(outfit.top.scale || 1);
+      }
+  
+      if (outfit.bottom?.uri) {
+        setSelectedClothes(prev => ({ ...prev, bottom: { uri: outfit.bottom.uri } }));
+        bottom.translateX.setValue(outfit.bottom.x || 68);
+        bottom.translateY.setValue(outfit.bottom.y || 300);
+        bottom.scale.setValue(outfit.bottom.scale || 1);
+      }
+  
+      if (outfit.shoes?.uri) {
+        setSelectedClothes(prev => ({ ...prev, shoes: { uri: outfit.shoes.uri } }));
+        shoes.translateX.setValue(outfit.shoes.x || 50);
+        shoes.translateY.setValue(outfit.shoes.y || 300);
+        shoes.scale.setValue(outfit.shoes.scale || 1);
+      }
+  
+      if (outfit.accessories?.uri) {
+        setSelectedClothes(prev => ({ ...prev, accessories: { uri: outfit.accessories.uri } }));
+        accessory.translateX.setValue(outfit.accessories.x || 90);
+        accessory.translateY.setValue(outfit.accessories.y || 200);
+        accessory.scale.setValue(outfit.accessories.scale || 1);
+      }
+    }
+  }, [route.params?.outfit]);
+  
+  
 
   const makeItemState = (initialX, initialY) => {
     const translateX = useRef(new Animated.Value(initialX)).current;
@@ -88,6 +130,84 @@ export default function MannequinScreen({ navigation, route }) {
     setModalVisible(false);
   };
 
+  const handlePlanOutfit = async () => {
+    if (!occasion) {
+      Alert.alert("Missing Info", "Please enter an occasion");
+      return;
+    }
+  
+    const outfitData = {
+      user_id,
+      occasion,
+      date,
+      top: selectedClothes.top?.uri ? {
+        uri: selectedClothes.top.uri,
+        x: top.translateX.__getValue(),
+        y: top.translateY.__getValue(),
+        scale: top.scale.__getValue()
+      } : null,
+      bottom: selectedClothes.bottom?.uri ? {
+        uri: selectedClothes.bottom.uri,
+        x: bottom.translateX.__getValue(),
+        y: bottom.translateY.__getValue(),
+        scale: bottom.scale.__getValue()
+      } : null,
+      shoes: selectedClothes.shoes?.uri ? {
+        uri: selectedClothes.shoes.uri,
+        x: shoes.translateX.__getValue(),
+        y: shoes.translateY.__getValue(),
+        scale: shoes.scale.__getValue()
+      } : null,
+      accessories: selectedClothes.accessories?.uri ? {
+        uri: selectedClothes.accessories.uri,
+        x: accessory.translateX.__getValue(),
+        y: accessory.translateY.__getValue(),
+        scale: accessory.scale.__getValue()
+      } : null
+    };
+  
+    try {
+      console.log("🛰️ Sending to:", `${BACKEND_URL}/plan-outfit`);
+      const response = await fetch(`${BACKEND_URL}/plan-outfit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(outfitData)
+      });
+  
+      const text = await response.text();
+      let data;
+  
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("❌ Not valid JSON. Raw response:", text);
+        throw new Error("Invalid JSON returned from server.");
+      }
+  
+      if (response.ok) {
+        Alert.alert("Outfit Planned", "Your outfit has been saved!", [
+          {
+            text: "OK",
+            onPress: () => {
+              setPlanModalVisible(false);
+              setOccasion('');
+              setDate('');
+              navigation.navigate('PlanOutfit', { user_id });
+            }
+          }
+        ]);
+      } else {
+        Alert.alert("Failed", data.message || "Unknown error");
+      }
+  
+    } catch (err) {
+      console.error("Save failed:", err);
+      Alert.alert("Error", "Something went wrong.");
+    }
+  };
+  
+  
+  
   const fetchClothing = async (category) => {
     try {
       const response = await fetch(`${BACKEND_URL}/get_user_clothing/${user_id}/${category}`);
@@ -124,7 +244,15 @@ export default function MannequinScreen({ navigation, route }) {
           >
             <FontAwesome5 name="undo" size={18} color="#fff" />
           </TouchableOpacity>
-
+          
+          {/* Plan Button */}
+          <TouchableOpacity
+            style={styles.planFloating}
+            onPress={() => setPlanModalVisible(true)}
+          >
+            <FontAwesome5 name="calendar-plus" size={16} color="#fff" />
+          </TouchableOpacity>
+          
           {/* Switch Gender Button */}
           <TouchableOpacity style={styles.switchButton} onPress={() => setIsMale(prev => !prev)}>
             <FontAwesome5 name="venus-mars" size={16} color="#fff" />
@@ -286,11 +414,7 @@ export default function MannequinScreen({ navigation, route }) {
                             : item
                         )}>
                           <Image
-                            source={
-                              item.image
-                                ? item.image
-                                : { uri: item.image_path }
-                            }
+                            source={{ uri: item.image_path }}
                             style={styles.clothingOption}
                           />
                         </TouchableOpacity>
@@ -301,6 +425,36 @@ export default function MannequinScreen({ navigation, route }) {
               </View>
             </TouchableWithoutFeedback>
           </Modal>
+          <Modal visible={planModalVisible} transparent animationType="fade">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Plan Outfit</Text>
+                  <TouchableOpacity onPress={() => setPlanModalVisible(false)} style={styles.closeButton}>
+                    <Text style={styles.closeButtonText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                <TextInput
+                  placeholder="Occasion"
+                  style={styles.input}
+                  placeholderTextColor="#999"
+                  value={occasion}
+                  onChangeText={setOccasion}
+                />
+                <TextInput
+                  placeholder="Date (optional)"
+                  style={styles.input}
+                  placeholderTextColor="#999"
+                  value={date}
+                  onChangeText={setDate}
+                />
+                <TouchableOpacity style={styles.saveButton} onPress={handlePlanOutfit}>
+                  <Text style={styles.saveText}>Save Outfit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
         </View>
       </SafeAreaView>
     </GestureHandlerRootView>
@@ -337,19 +491,24 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   icon: { width: 20, height: 20, marginRight: 6, resizeMode: 'contain' },
+  backButton: { position: 'absolute', top: 70, left: 20, zIndex: 10, padding: 8 },
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center',
+  },
   undoFloating: {
     position: 'absolute', top: 70, right: 20, zIndex: 10,
     backgroundColor: '#8b0000', width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
   },
   switchButton: {
-    position: 'absolute', top: 130, right: 20, zIndex: 10,
+    position: 'absolute', top: 120, right: 20, zIndex: 10,
     backgroundColor: '#555', width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
   },
-  backButton: { position: 'absolute', top: 70, left: 20, zIndex: 10, padding: 8 },
-  modalOverlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center',
+  planFloating: {
+    position: 'absolute', top: 170, right: 20, zIndex: 10,
+    backgroundColor: '#3B3A39', width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
   },
   modalContent: {
     backgroundColor: '#fff', padding: 20, margin: 20, borderRadius: 10,
@@ -367,5 +526,15 @@ const styles = StyleSheet.create({
   clothingOption: {
     width: 100, height: 100, marginRight: 12, borderRadius: 8,
   },
-  
+  input: {
+    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
+    padding: 10, marginBottom: 10,
+  },
+  saveButton: {
+    backgroundColor: '#3B3A39', padding: 12, borderRadius: 8,
+    alignItems: 'center',
+  },
+  saveText: {
+    color: '#fff', fontWeight: 'bold',
+  },  
 });

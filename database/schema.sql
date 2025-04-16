@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
-    gender TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL
 );
@@ -24,6 +23,7 @@ CREATE TABLE IF NOT EXISTS planned_outfits (
     top TEXT,
     bottom TEXT,
     shoes TEXT,
+    accessories TEXT,
     occasion TEXT NOT NULL,
     date TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id)

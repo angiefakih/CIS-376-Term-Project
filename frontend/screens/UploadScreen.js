@@ -50,7 +50,7 @@ export default function UploadScreen({ navigation, route }) {
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
+      allowsEditing: false,
       quality: 0.5,
     });
     if (!result.canceled) {
@@ -96,16 +96,12 @@ export default function UploadScreen({ navigation, route }) {
             text: "OK",
             onPress: () => {
               resetForm();
-              navigation.navigate('Wardrobe', {user_id,
-                ...clothingData,
-                image: `${API_URL}${data.image_path}`,
-              });
+              navigation.navigate('Wardrobe', { user_id });
             },
           },
         ]);
       } else {
         Alert.alert("Upload failed", data.error || "Something went wrong.");
-       
       }
     } catch (error) {
       setIsLoading(false);
@@ -209,11 +205,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'flex-start',
-    paddingBottom: 30,
+    paddingBottom: 10,
   },
-  
   
   backButton: {
     flexDirection: 'row',

@@ -17,14 +17,13 @@ import { API_URL } from '../config';
 export default function SignupScreen({ navigation }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [gender, setGender] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const BACKEND_URL = 'http://192.168.0.109:5000';
+  //const BACKEND_URL = 'http://192.168.0.109:5000';
 
   const handleSignup = async () => {
-    if (!firstName || !lastName || !gender || !email || !password) {
+    if (!firstName || !lastName || !email || !password) {
       Alert.alert("Missing Info", "Please fill out all fields.");
       return;
     }
@@ -36,7 +35,6 @@ export default function SignupScreen({ navigation }) {
         body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
-          gender,
           email,
           password
         })
