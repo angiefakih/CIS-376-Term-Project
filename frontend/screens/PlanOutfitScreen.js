@@ -8,6 +8,7 @@ import {
   Platform,
   Alert,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
@@ -32,7 +33,7 @@ export default function PlanOutfitScreen({ route, navigation }) {
 
   const handleDeleteOutfit = (outfitId) => {
     Alert.alert(
-      'Delete Outfit',
+      'Confirm Delete',
       'Are you sure you want to delete this outfit?',
       [
         { text: 'Cancel', style: 'cancel' },
@@ -65,61 +66,77 @@ export default function PlanOutfitScreen({ route, navigation }) {
     );
   };
 
-  const renderOutfit = ({ item }) => {
-    
+  const handleCardLongPress = (item) => {
+    Alert.alert(
+      'Delete Outfit?',
+      `${item.occasion} - ${item.date || 'No Date'}`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          onPress: () => handleDeleteOutfit(item.id),
+          style: 'destructive',
+        },
+      ]
+    );
+  };
+
+  const renderOutfit = ({ item, index }) => {
+    const fadeAnim = new Animated.Value(0);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      delay: index * 80,
+      useNativeDriver: true,
+    }).start();
+  
     return (
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate('Mannequin', {
-            user_id,
-            outfit: {
-              top: item.top,
-              bottom: item.bottom,
-              shoes: item.shoes,
-              accessories: item.accessories,
-            }
-          });
-        }}
-        onLongPress={() => handleDeleteOutfit(item.id)}
-      >
-        <View style={styles.card}>
+      <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+        <TouchableOpacity onPress={() => navigation.navigate('Mannequin', {
+          user_id,
+          outfit: {
+            top: item.top,
+            bottom: item.bottom,
+            shoes: item.shoes,
+            accessories: item.accessories,
+          },
+          gender: item.gender
+        })}
+        onLongPress={() => handleCardLongPress(item)}
+        >
           <Text style={styles.title}>{item.occasion}</Text>
           <Text style={styles.subtitle}>{item.date || 'No Date'}</Text>
   
           <View style={styles.imageRow}>
-          {item.top?.uri && (
-          <View style={styles.imageColumn}>
-            <Image source={{ uri: item.top.uri }} style={styles.image} />
-            <Text style={styles.imageLabel}>Top</Text>
+            {item.top?.uri && (
+              <View style={styles.imageColumn}>
+                <Image source={{ uri: item.top.uri }} style={styles.image} />
+                <Text style={styles.imageLabel}>Top</Text>
+              </View>
+            )}
+            {item.bottom?.uri && (
+              <View style={styles.imageColumn}>
+                <Image source={{ uri: item.bottom.uri }} style={styles.image} />
+                <Text style={styles.imageLabel}>Bottom</Text>
+              </View>
+            )}
+            {item.shoes?.uri && (
+              <View style={styles.imageColumn}>
+                <Image source={{ uri: item.shoes.uri }} style={styles.image} />
+                <Text style={styles.imageLabel}>Shoes</Text>
+              </View>
+            )}
+            {item.accessories?.uri && (
+              <View style={styles.imageColumn}>
+                <Image source={{ uri: item.accessories.uri }} style={styles.image} />
+                <Text style={styles.imageLabel}>Acc.</Text>
+              </View>
+            )}
           </View>
-        )}
-
-        {item.bottom?.uri && (
-          <View style={styles.imageColumn}>
-            <Image source={{ uri: item.bottom.uri }} style={styles.image} />
-            <Text style={styles.imageLabel}>Bottom</Text>
-          </View>
-        )}
-
-        {item.shoes?.uri && (
-          <View style={styles.imageColumn}>
-            <Image source={{ uri: item.shoes.uri }} style={styles.image} />
-            <Text style={styles.imageLabel}>Shoes</Text>
-          </View>
-        )}
-
-        {item.accessories?.uri && (
-          <View style={styles.imageColumn}>
-            <Image source={{ uri: item.accessories.uri }} style={styles.image} />
-            <Text style={styles.imageLabel}>Acc.</Text>
-          </View>
-        )}
-
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </Animated.View>
     );
-  };
+  };  
   
 
   return (
@@ -133,12 +150,19 @@ export default function PlanOutfitScreen({ route, navigation }) {
       <Text style={styles.screenTitle}>Planned Outfits</Text>
 
       {/* Outfit List */}
-      <FlatList
-        data={plannedOutfits}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderOutfit}
-        contentContainerStyle={styles.list}
-      />
+      {plannedOutfits.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>You have no planned outfits.</Text>
+          <Text style={styles.emptyText}>Tap the ➕ button to plan your first outfit.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={plannedOutfits}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderOutfit}
+          contentContainerStyle={styles.list}
+        />
+      )}
 
       {/* Add Outfit Floating Button */}
       <TouchableOpacity
@@ -247,4 +271,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
   },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 60,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    textAlign: 'center',
+    marginBottom: 6,
+  },  
 });

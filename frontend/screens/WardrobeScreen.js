@@ -22,6 +22,7 @@ export default function WardrobeScreen({ route, navigation }) {
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedImageUri, setSelectedImageUri] = useState(null);
   const isSingleRow = filteredItems.length > 0 && filteredItems.length <= 2;
   const user_id = route.params?.user_id;
 
@@ -88,8 +89,8 @@ export default function WardrobeScreen({ route, navigation }) {
       'Delete Item?',
       `${item.category} - ${item.color}\n${item.brand}`,
       [
-        { text: 'Delete', onPress: () => handleDelete(item.id), style: 'destructive' },
         { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', onPress: () => handleDelete(item.id), style: 'destructive' },
       ]
     );
   };
@@ -125,7 +126,11 @@ export default function WardrobeScreen({ route, navigation }) {
 
     return (
       <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
-        <TouchableOpacity onLongPress={() => handleCardLongPress(item)}>
+        <TouchableOpacity
+          onPress={() => setSelectedImageUri(`${API_URL}${item.image}`)}
+          onLongPress={() => handleCardLongPress(item)}
+          delayLongPress={300}
+        >
           <Image
             source={{ uri: `${API_URL}${item.image}` }}
             style={styles.image}
@@ -150,6 +155,14 @@ export default function WardrobeScreen({ route, navigation }) {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipBar}>
             {categories.map(renderChip)}
           </ScrollView>
+          {selectedImageUri && (
+            <View style={styles.previewContainer}>
+              <TouchableOpacity onPress={() => setSelectedImageUri(null)} style={styles.closePreview}>
+                <Ionicons name="close-circle" size={24} color="#555" />
+              </TouchableOpacity>
+              <Image source={{ uri: selectedImageUri }} style={styles.previewImage} />
+            </View>
+          )}
 
           {filteredItems.length === 0 ? (
             <View style={styles.emptyState}>
@@ -305,4 +318,27 @@ const styles = StyleSheet.create({
     padding: 10,
     zIndex: 10,
   },
+  previewContainer: {
+    marginTop: 15,
+    marginVertical: 10,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  
+  previewImage: {
+    width: '100%',
+    height: 250,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    resizeMode: 'contain',
+  },
+  
+  closePreview: {
+    position: 'absolute',
+    top: 5,
+    right: 10,
+    zIndex: 1,
+  },
+  
 });

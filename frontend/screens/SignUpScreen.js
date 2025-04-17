@@ -21,10 +21,33 @@ export default function SignupScreen({ navigation }) {
   const [password, setPassword] = useState('');
 
   //const BACKEND_URL = 'http://192.168.0.109:5000';
-
+  
+  const allowedDomains = [
+    "@gmail.com",
+    "@yahoo.com",
+    "@outlook.com",
+    "@hotmail.com",
+    "@icloud.com",
+    "@umich.edu"
+  ];
+  
+  const isValidEmail = (email) => {
+    return allowedDomains.some(domain => email.endsWith(domain));
+  };
+  
   const handleSignup = async () => {
     if (!firstName || !lastName || !email || !password) {
       Alert.alert("Missing Info", "Please fill out all fields.");
+      return;
+    }
+  
+    if (!isValidEmail(email)) {
+      Alert.alert("Invalid Email", "Please use a valid email domain (e.g., gmail.com)");
+      return;
+    }
+  
+    if (password.length < 5) {
+      Alert.alert("Weak Password", "Password must be at least 5 characters long.");
       return;
     }
   

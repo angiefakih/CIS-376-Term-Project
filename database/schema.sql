@@ -26,5 +26,6 @@ CREATE TABLE IF NOT EXISTS planned_outfits (
     accessories TEXT,
     occasion TEXT NOT NULL,
     date TEXT,
+    gender TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );

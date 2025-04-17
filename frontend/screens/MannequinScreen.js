@@ -29,8 +29,11 @@ export default function MannequinScreen({ navigation, route }) {
   });
   const [clothingItems, setClothingItems] = useState([]);
   const [occasion, setOccasion] = useState('');
-  const [date, setDate] = useState('');
   const [planModalVisible, setPlanModalVisible] = useState(false);
+
+  const [mm, setMM] = useState('');
+  const [dd, setDD] = useState('');
+  const [yyyy, setYYYY] = useState('');
 
   const clothesData = {
     top: [
@@ -46,6 +49,9 @@ export default function MannequinScreen({ navigation, route }) {
   };
 
   useEffect(() => {
+    if (route.params?.gender) {
+      setIsMale(route.params.gender === 'male');
+    }
     if (route.params?.outfit) {
       const outfit = route.params.outfit;
   
@@ -130,16 +136,58 @@ export default function MannequinScreen({ navigation, route }) {
     setModalVisible(false);
   };
 
+  const isValidDate = (dateStr) => {
+    if (!dateStr) return true; // allow empty (optional)
+    const regex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format
+    if (!regex.test(dateStr)) return false;
+  
+    const dateObj = new Date(dateStr);
+    return !isNaN(dateObj.getTime());
+  };
+  
+  const isRealDate = (mm, dd, yyyy) => {
+    const month = parseInt(mm, 10);
+    const day = parseInt(dd, 10);
+    const year = parseInt(yyyy, 10);
+  
+    if (isNaN(month) || isNaN(day) || isNaN(year)) return false;
+    if (month < 1 || month > 12) return false;
+    if (year < 2000 || year > 9999) return false;
+  
+    let maxDay;
+  
+    if ([1, 3, 5, 7, 8, 10, 12].includes(month)) {
+      maxDay = 31;
+    } else if ([4, 6, 9, 11].includes(month)) {
+      maxDay = 30;
+    } else if (month === 2) {
+      const isLeap = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+      if (isLeap) {
+        maxDay = 29;
+      } else {
+        maxDay = 28;
+      }
+    }
+  
+    return day >= 1 && day <= maxDay;
+  };
+
   const handlePlanOutfit = async () => {
     if (!occasion) {
       Alert.alert("Missing Info", "Please enter an occasion");
       return;
     }
-  
+
+    finalDate = `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+    if (!isRealDate(mm, dd, yyyy)) {
+      Alert.alert("Invalid Date", "That date doesn’t exist.");
+      return;
+    }
+
     const outfitData = {
       user_id,
       occasion,
-      date,
+      date: finalDate,
       top: selectedClothes.top?.uri ? {
         uri: selectedClothes.top.uri,
         x: top.translateX.__getValue(),
@@ -163,7 +211,8 @@ export default function MannequinScreen({ navigation, route }) {
         x: accessory.translateX.__getValue(),
         y: accessory.translateY.__getValue(),
         scale: accessory.scale.__getValue()
-      } : null
+      } : null,
+      gender: isMale ? 'male' : 'female',
     };
   
     try {
@@ -191,7 +240,9 @@ export default function MannequinScreen({ navigation, route }) {
             onPress: () => {
               setPlanModalVisible(false);
               setOccasion('');
-              setDate('');
+              setMM('');
+              setDD('');
+              setYYYY('');
               navigation.navigate('PlanOutfit', { user_id });
             }
           }
@@ -441,13 +492,41 @@ export default function MannequinScreen({ navigation, route }) {
                   value={occasion}
                   onChangeText={setOccasion}
                 />
-                <TextInput
-                  placeholder="Date (optional)"
-                  style={styles.input}
-                  placeholderTextColor="#999"
-                  value={date}
-                  onChangeText={setDate}
-                />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <TextInput
+                    placeholder="MM"
+                    style={[styles.input, { flex: 1, marginRight: 5 }]}
+                    placeholderTextColor="#999"
+                    value={mm}
+                    onChangeText={(text) => {
+                      if (/^\d{0,2}$/.test(text)) setMM(text);
+                    }}
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                  <TextInput
+                    placeholder="DD"
+                    style={[styles.input, { flex: 1, marginHorizontal: 5 }]}
+                    placeholderTextColor="#999"
+                    value={dd}
+                    onChangeText={(text) => {
+                      if (/^\d{0,2}$/.test(text)) setDD(text);
+                    }}
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                  <TextInput
+                    placeholder="YYYY"
+                    style={[styles.input, { flex: 2, marginLeft: 5 }]}
+                    placeholderTextColor="#999"
+                    value={yyyy}
+                    onChangeText={(text) => {
+                      if (/^\d{0,4}$/.test(text)) setYYYY(text);
+                    }}
+                    keyboardType="numeric"
+                    maxLength={4}
+                  />
+                </View>
                 <TouchableOpacity style={styles.saveButton} onPress={handlePlanOutfit}>
                   <Text style={styles.saveText}>Save Outfit</Text>
                 </TouchableOpacity>

@@ -47,6 +47,7 @@ def init_db():
         accessories TEXT,
         occasion TEXT NOT NULL,
         date TEXT,
+        gender TEXT,
         FOREIGN KEY (user_id) REFERENCES users(id)
     );
 ''')
@@ -245,12 +246,13 @@ def plan_outfit():
     bottom = json.dumps(data.get('bottom')) if data.get('bottom') else None
     shoes = json.dumps(data.get('shoes')) if data.get('shoes') else None
     accessories = json.dumps(data.get('accessories')) if data.get('accessories') else None
+    gender = data.get('gender')
 
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO planned_outfits (user_id, top, bottom, shoes, accessories, occasion, date)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO planned_outfits (user_id, top, bottom, shoes, accessories, occasion, date, gender)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         data['user_id'],
         top,
@@ -258,7 +260,8 @@ def plan_outfit():
         shoes,
         accessories,
         data['occasion'],
-        data.get('date')
+        data.get('date'),
+        gender
     ))
     conn.commit()
     conn.close()
