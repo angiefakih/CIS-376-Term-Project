@@ -19,18 +19,20 @@ export default function PlanOutfitScreen({ route, navigation }) {
   const [plannedOutfits, setPlannedOutfits] = useState([]);
   const isFocused = useIsFocused();
 
+  // Track the user and load their planned outfits when screen is focused
   useEffect(() => {
     if (!user_id || !isFocused) return;
 
     fetch(`${API_URL}/planned-outfits/${user_id}`)
       .then(res => res.json())
       .then(data => {
-        console.log("📝 Planned outfits:", data);
+        console.log("Planned outfits:", data);
         setPlannedOutfits(data);
       })
-      .catch(err => console.error("❌ Fetch failed:", err));
+      .catch(err => console.error("Fetch failed:", err));
   }, [isFocused]);
 
+  // Ask for confirmation and delete an outfit
   const handleDeleteOutfit = (outfitId) => {
     Alert.alert(
       'Confirm Delete',
@@ -66,6 +68,7 @@ export default function PlanOutfitScreen({ route, navigation }) {
     );
   };
 
+  // Show alert on long press to delete a card
   const handleCardLongPress = (item) => {
     Alert.alert(
       'Delete Outfit?',
@@ -81,6 +84,7 @@ export default function PlanOutfitScreen({ route, navigation }) {
     );
   };
 
+  // Fade-in animation for outfit cards
   const renderOutfit = ({ item, index }) => {
     const fadeAnim = new Animated.Value(0);
     Animated.timing(fadeAnim, {
@@ -178,7 +182,7 @@ export default function PlanOutfitScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E1C1A', // Espresso tone
+    backgroundColor: '#1E1C1A',
     paddingTop: 80,
     paddingHorizontal: 20,
   },

@@ -6,13 +6,14 @@ import base64
 import json
 from datetime import datetime
 
-
+# Setup Flask app and upload folder
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
+# Define Flask app and database path
 app = Flask(__name__)
 DB_PATH = os.path.join(os.path.dirname(__file__), '../database/wardrobe.db')
 
+# Initialize the database and tables
 def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
@@ -55,14 +56,17 @@ def init_db():
     conn.commit()
     conn.close()
 
+# Enable CORS and run DB initialization
 init_db()
 CORS(app)
 
+# Connect to the SQLite database
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
+# User registration
 @app.route("/register", methods=["POST"])
 def register():
     data = request.json
@@ -81,6 +85,7 @@ def register():
     conn.close()
     return jsonify({"message": "User registered successfully"}), 201
 
+# Check email/password and return user_id
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
@@ -98,10 +103,11 @@ def login():
     else:
         return jsonify({"error": "Invalid email or password"}), 401
 
+# Create a new user account
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
-    print("🔐 Signup data:", data)
+    print("Signup data:", data)
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -129,6 +135,7 @@ def signup():
     finally:
         conn.close()
 
+# Upload image and clothing details
 @app.route('/upload', methods=['POST'])
 def upload_clothing():
     data = request.get_json()
@@ -139,11 +146,11 @@ def upload_clothing():
     brand = data.get('brand')
     season = data.get('season')
 
-    print("📦 Uploading clothing data...")
+    print("Uploading clothing data...")
     print("Received fields:", data)
 
     if not all([user_id, image_data, category, color, brand, season]):
-        print("⚠️ Missing required fields")
+        print("Missing required fields")
         return jsonify({'error': 'Missing required fields'}), 400
 
     try:
@@ -166,13 +173,14 @@ def upload_clothing():
         conn.commit()
         conn.close()
 
-        print("✅ Upload success. Returning:", image_path)
+        print("Upload success. Returning:", image_path)
         return jsonify({'message': 'Item uploaded successfully', 'image_path': image_path}), 200
 
     except Exception as e:
-        print("❌ Upload error:", e)
+        print("Upload error:", e)
         return jsonify({'error': 'Server error'}), 500
 
+# Get all clothing items for a user
 @app.route("/wardrobe/<int:user_id>", methods=["GET"])
 def get_wardrobe(user_id):
     conn = get_db_connection()
@@ -182,11 +190,12 @@ def get_wardrobe(user_id):
     conn.close()
     return jsonify(items)
 
+# Load image from uploads folder
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
-
+# Get clothing items by category
 @app.route('/get_user_clothing/<int:user_id>/<category>', methods=['GET'])
 def get_user_clothing(user_id, category):
     try:
@@ -204,7 +213,7 @@ def get_user_clothing(user_id, category):
         return jsonify({'error': 'Something went wrong'}), 500
 
 
-
+# Delete clothing item and its image
 @app.route("/wardrobe/<int:item_id>", methods=["DELETE"])
 def delete_clothing_item(item_id):
     try:
@@ -236,7 +245,7 @@ def delete_clothing_item(item_id):
         print("Delete error:", e)
         return jsonify({'error': 'Failed to delete item'}), 500
     
-
+# Save outfit with clothing, date, and gender
 @app.route('/plan-outfit', methods=['POST'])
 def plan_outfit():
     data = request.get_json()
@@ -268,7 +277,7 @@ def plan_outfit():
 
     return jsonify({"message": "Outfit saved successfully"}), 201
 
-    
+# Get all planned outfits for a user
 @app.route('/planned-outfits/<int:user_id>', methods=['GET'])
 def get_planned_outfits(user_id):
     conn = get_db_connection()
@@ -292,10 +301,11 @@ def get_planned_outfits(user_id):
     return jsonify(outfits)
 
 
+# Delete a specific planned outfit
 @app.route("/planned-outfits/<int:outfit_id>", methods=["DELETE"])
 def delete_planned_outfit(outfit_id):
     try:
-        print(f"🗑️ Attempting to delete planned outfit with ID: {outfit_id}")
+        print(f"Attempting to delete planned outfit with ID: {outfit_id}")
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -304,14 +314,14 @@ def delete_planned_outfit(outfit_id):
         row = cursor.fetchone()
 
         if not row:
-            print(f"❌ No outfit found with ID: {outfit_id}")
+            print(f"No outfit found with ID: {outfit_id}")
             return jsonify({'error': 'Outfit not found'}), 404
         
         cursor.execute("DELETE FROM planned_outfits WHERE id = ?", (outfit_id,))
         conn.commit()
         conn.close()
 
-        print(f"✅ Outfit with ID {outfit_id} deleted successfully")
+        print(f"Outfit with ID {outfit_id} deleted successfully")
         return jsonify({'message': 'Outfit deleted successfully'})
 
     except Exception as e:

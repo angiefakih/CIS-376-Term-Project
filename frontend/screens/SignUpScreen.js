@@ -19,9 +19,8 @@ export default function SignupScreen({ navigation }) {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  //const BACKEND_URL = 'http://192.168.0.109:5000';
   
+  // Emails allowed for sign-up
   const allowedDomains = [
     "@gmail.com",
     "@yahoo.com",
@@ -31,10 +30,12 @@ export default function SignupScreen({ navigation }) {
     "@umich.edu"
   ];
   
+  // Checks if the entered email ends with a valid domain
   const isValidEmail = (email) => {
     return allowedDomains.some(domain => email.endsWith(domain));
   };
   
+  // Handles signup logic
   const handleSignup = async () => {
     if (!firstName || !lastName || !email || !password) {
       Alert.alert("Missing Info", "Please fill out all fields.");
@@ -82,11 +83,14 @@ export default function SignupScreen({ navigation }) {
   };
 
   return (
+    // Background image wrapper
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
       <View style={styles.overlay}>
+        {/* Scrollable container for form */}
         <ScrollView contentContainerStyle={styles.container}>
+          {/* Page title */}
           <Text style={styles.title}>Create an Account</Text>
-
+          {/* First Name input */}
           <TextInput
             placeholder="First Name"
             style={styles.input}
@@ -94,7 +98,7 @@ export default function SignupScreen({ navigation }) {
             value={firstName}
             onChangeText={setFirstName}
           />
-
+          {/* Last Name input */}
           <TextInput
             placeholder="Last Name"
             style={styles.input}
@@ -102,8 +106,7 @@ export default function SignupScreen({ navigation }) {
             value={lastName}
             onChangeText={setLastName}
           />
-
-
+          {/* Email input */}
           <TextInput
             placeholder="Email"
             style={styles.input}
@@ -113,7 +116,7 @@ export default function SignupScreen({ navigation }) {
             autoCapitalize="none"
             keyboardType="email-address"
           />
-
+          {/* Password input */}
           <TextInput
             placeholder="Password"
             style={styles.input}
@@ -122,11 +125,11 @@ export default function SignupScreen({ navigation }) {
             onChangeText={setPassword}
             secureTextEntry
           />
-
+          {/* Sign-up button */}
           <TouchableOpacity style={styles.button} onPress={handleSignup}>
             <Text style={styles.buttonText}>Create Account</Text>
           </TouchableOpacity>
-
+          {/* Link to go back to login screen */}
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
             <Text style={styles.linkText}>Already have an account? Log in</Text>
           </TouchableOpacity>

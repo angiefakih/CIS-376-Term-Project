@@ -8,10 +8,10 @@ import {
   Image,
   TouchableOpacity,
   Platform,
-  ScrollView,
+  //ScrollView,
   ImageBackground,
   ActivityIndicator,
-  KeyboardAvoidingView,
+  //KeyboardAvoidingView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -24,7 +24,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 
 export default function UploadScreen({ navigation, route }) {
   const user_id = route.params?.user_id;
-
+  // State variables for form fields and UI state
   const [imageUri, setImageUri] = useState('');
   const [color, setColor] = useState('');
   const [brand, setBrand] = useState('');
@@ -39,6 +39,7 @@ export default function UploadScreen({ navigation, route }) {
       { label: 'Accessories', value: 'Accessories' },
     ]);
 
+  // Reset form after upload
   const resetForm = () => {
     setImageUri('');
     setCategory(null);
@@ -47,6 +48,7 @@ export default function UploadScreen({ navigation, route }) {
     setSeason('');
   };
 
+  // Opens image picker to select an image
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -58,19 +60,17 @@ export default function UploadScreen({ navigation, route }) {
     }
   };
 
+  // Uploads the clothing item to the backend
   const handleUpload = async () => {
     if (!imageUri || !category || !color || !brand || !season) {
       Alert.alert("Missing info", "Please complete all fields and pick an image.");
       return;
     }
-
     setIsLoading(true);
-
     try {
       const base64Image = await FileSystem.readAsStringAsync(imageUri, {
         encoding: FileSystem.EncodingType.Base64,
       });
-
       const clothingData = {
         user_id,
         image_data: base64Image,
@@ -79,17 +79,13 @@ export default function UploadScreen({ navigation, route }) {
         brand,
         season,
       };
-
       const response = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clothingData),
       });
-
       const data = await response.json();
-
       setIsLoading(false);
-
       if (response.ok) {
         Alert.alert("Success", "Your item has been uploaded.", [
           {
@@ -110,50 +106,47 @@ export default function UploadScreen({ navigation, route }) {
   };
 
   return (
+    // Background image wrapper
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
         <View style={styles.overlay}>
-                      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <FontAwesome name="arrow-left" size={28} color="#F5F5DC" />
-              
-            </TouchableOpacity>
-
+          {/* Back button */}
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <FontAwesome name="arrow-left" size={28} color="#F5F5DC" />
+          </TouchableOpacity>
+            {/* Screen title */}
             <Text style={styles.title}>Upload Item</Text>
-
             <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
               <FontAwesome name="image" size={20} color="#F5F5DC" />
               <Text style={styles.pickerText}>Pick Image</Text>
             </TouchableOpacity>
-
+            {/* Preview selected image */}
             {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
-
-            
-       {/* DROP DOWN PICKER OUTSIDE ScrollView */}
-              <View style={{ zIndex: 1000, marginBottom: 20 }}>
-                <DropDownPicker
-                  open={open}
-                  value={category}
-                  items={categoryItems}
-                  setOpen={setOpen}
-                  setValue={setCategory}
-                  setItems={setCategoryItems}
-                  placeholder="Select a category..."
-                  style={styles.dropdown}
-                  dropDownContainerStyle={styles.dropdownContainer}
-                  placeholderStyle={styles.placeholderStyle}
-                  textStyle={styles.pickerText}
-                  arrowIconStyle={{ tintColor: '#F5F5DC' }}
-                />
-              </View>
-
-
-          {/* SCROLLABLE INPUT FIELDS */}
-                  <KeyboardAwareScrollView
-                    contentContainerStyle={styles.scrollContainer}
-                    enableOnAndroid={true}
-                    keyboardShouldPersistTaps="handled"
-                    extraScrollHeight={30}
-                    showsVerticalScrollIndicator={false}
-                    >
+            {/* Drop Down Picker */}
+            <View style={{ zIndex: 1000, marginBottom: 20 }}>
+              <DropDownPicker
+                open={open}
+                value={category}
+                items={categoryItems}
+                setOpen={setOpen}
+                setValue={setCategory}
+                setItems={setCategoryItems}
+                placeholder="Select a category..."
+                style={styles.dropdown}
+                dropDownContainerStyle={styles.dropdownContainer}
+                placeholderStyle={styles.placeholderStyle}
+                textStyle={styles.pickerText}
+                arrowIconStyle={{ tintColor: '#F5F5DC' }}
+              />
+            </View>
+            {/* Scrollable Fields */}
+            <KeyboardAwareScrollView
+              contentContainerStyle={styles.scrollContainer}
+              enableOnAndroid={true}
+              keyboardShouldPersistTaps="handled"
+              extraScrollHeight={30}
+              showsVerticalScrollIndicator={false}
+              >
+            {/* Input for color */}
             <TextInput
               placeholder="Color"
               style={styles.input}
@@ -161,6 +154,7 @@ export default function UploadScreen({ navigation, route }) {
               value={color}
               onChangeText={setColor}
             />
+            {/* Input for brand */}
             <TextInput
               placeholder="Brand"
               style={styles.input}
@@ -168,6 +162,7 @@ export default function UploadScreen({ navigation, route }) {
               value={brand}
               onChangeText={setBrand}
             />
+            {/* Input for season */}
             <TextInput
               placeholder="Season"
               style={styles.input}
@@ -175,7 +170,6 @@ export default function UploadScreen({ navigation, route }) {
               value={season}
               onChangeText={setSeason}
             />
-
             {isLoading ? (
               <ActivityIndicator size="large" color="#F5F5DC" style={{ marginVertical: 20 }} />
             ) : (
@@ -214,7 +208,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     alignSelf: 'flex-start',
   },
-  
   title: {
     fontSize: 26,
     color: '#F5F5DC',

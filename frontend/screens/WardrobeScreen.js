@@ -19,6 +19,7 @@ import { useCallback } from 'react';
 
 
 export default function WardrobeScreen({ route, navigation }) {
+  // State variables
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -28,6 +29,7 @@ export default function WardrobeScreen({ route, navigation }) {
 
   const categories = ['All', 'Tops', 'Bottoms', 'Shoes', 'Accessories'];
 
+  // Gets clothing items when screen is focused
   useFocusEffect(
     useCallback(() => {
       fetch(`${API_URL}/wardrobe/${user_id}`)
@@ -40,7 +42,7 @@ export default function WardrobeScreen({ route, navigation }) {
     }, [user_id])
   );
   
-
+  // Filters wardrobe items by selected category
   const handleFilter = (category) => {
     setSelectedCategory(category);
     if (category === 'All') {
@@ -53,6 +55,7 @@ export default function WardrobeScreen({ route, navigation }) {
     }
   };
 
+  // Deletes an item from wardrobe and updates UI
   const handleDelete = (itemId) => {
     Alert.alert(
       'Confirm Delete',
@@ -84,6 +87,7 @@ export default function WardrobeScreen({ route, navigation }) {
     );
   };
 
+  // Shows delete prompt when user long presses a card
   const handleCardLongPress = (item) => {
     Alert.alert(
       'Delete Item?',
@@ -95,6 +99,7 @@ export default function WardrobeScreen({ route, navigation }) {
     );
   };
 
+  // Renders each filter chip
   const renderChip = (category) => (
     <TouchableOpacity
       key={category}
@@ -115,6 +120,7 @@ export default function WardrobeScreen({ route, navigation }) {
     </TouchableOpacity>
   );
 
+  // Renders each wardrobe card with fade-in animation
   const renderItem = ({ item, index }) => {
     const fadeAnim = new Animated.Value(0);
     Animated.timing(fadeAnim, {
@@ -145,16 +151,18 @@ export default function WardrobeScreen({ route, navigation }) {
   return (
     <SafeAreaView style={styles.background}>
       <View style={styles.container}>
+        {/* Back Button */}
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={30} color="#3B3A39" />
         </TouchableOpacity>
-
+        {/* Page title */}
         <Text style={styles.title}>Your Wardrobe</Text>
-
         <View style={{ flexGrow: 1 }}>
+          {/* Category filter */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipBar}>
             {categories.map(renderChip)}
           </ScrollView>
+          {/* Full image preview when item is tapped */}
           {selectedImageUri && (
             <View style={styles.previewContainer}>
               <TouchableOpacity onPress={() => setSelectedImageUri(null)} style={styles.closePreview}>
@@ -170,6 +178,7 @@ export default function WardrobeScreen({ route, navigation }) {
               <Text style={styles.emptyText}>Tap the ➕ button to add your first item.</Text>
             </View>
           ) : (
+            // Grid of filtered wardrobe items
             <FlatList
               data={filteredItems}
               keyExtractor={(item) => item.id.toString()}
@@ -180,7 +189,7 @@ export default function WardrobeScreen({ route, navigation }) {
             />
           )}
         </View>
-
+        {/* Add button */}
         <TouchableOpacity
           style={styles.fab}
           onPress={() => navigation.navigate('Upload', { user_id })}
@@ -240,14 +249,12 @@ const styles = StyleSheet.create({
   chipTextSelected: {
     color: '#fff',
   },
-
   flatListContent: {
     paddingTop: 10,
     paddingBottom: 100,
     paddingHorizontal: 2,
     gap: 10,
   },
-
   columnWrapper: {
     justifyContent: 'space-between',
     marginBottom: 10,
@@ -324,7 +331,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
   },
-  
   previewImage: {
     width: '100%',
     height: 250,
@@ -333,12 +339,10 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     resizeMode: 'contain',
   },
-  
   closePreview: {
     position: 'absolute',
     top: 5,
     right: 10,
     zIndex: 1,
   },
-  
 });

@@ -6,13 +6,13 @@ let LOCAL_IP;
 if (Constants.manifest?.debuggerHost) {
   LOCAL_IP = Constants.manifest.debuggerHost.split(':').shift();
 }
-// Else try expoConfig.hostUri
+// Try expoConfig.hostUri
 else if (Constants.expoConfig?.hostUri) {
   LOCAL_IP = Constants.expoConfig.hostUri.split(':').shift();
 }
-// Else hardcode as fallback
+// Hardcode
 // else {
-//   LOCAL_IP = '192.168.xx.xxx'; // <-- manually set if needed
+//   LOCAL_IP = '192.168.xx.xxx'; //manually set
 // }
 
 export const API_URL = `http://${LOCAL_IP}:5000`;

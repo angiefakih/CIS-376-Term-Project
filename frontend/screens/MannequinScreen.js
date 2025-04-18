@@ -6,12 +6,14 @@ import {
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { GestureHandlerRootView, PinchGestureHandler } from 'react-native-gesture-handler';
-import PantsIcon from '../assets/icons/trousers.png';import Constants from 'expo-constants';
+import PantsIcon from '../assets/icons/trousers.png';
+import Constants from 'expo-constants';
 import { Alert } from 'react-native'; 
-//import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 const { manifest2, manifest } = Constants;
+
+// Get the backend IP depending on the platform
 const backendHost = Platform.OS === 'web'
   ? 'localhost'
   : Constants.expoConfig?.hostUri?.split(':')[0];
@@ -24,6 +26,7 @@ export default function MannequinScreen({ navigation, route }) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [actionHistory, setActionHistory] = useState([]);
   const [isMale, setIsMale] = useState(true);
+  // Stores selected category, clothing, and gender
   const [selectedClothes, setSelectedClothes] = useState({
     top: null, bottom: null, shoes: null, accessories: null, 
   });
@@ -35,19 +38,7 @@ export default function MannequinScreen({ navigation, route }) {
   const [dd, setDD] = useState('');
   const [yyyy, setYYYY] = useState('');
 
-  const clothesData = {
-    top: [
-      { id: 1, image: require('../assets/images/top1.png') },
-      { id: 2, image: require('../assets/images/top2.png') },
-    ],
-    bottom: [
-      { id: 3, image: require('../assets/images/pants1.png') },
-    ],
-    shoes: [
-      { id: 4, image: require('../assets/images/shoes1.png') },
-    ],
-  };
-
+  // Loads outfit data and gender from navigation
   useEffect(() => {
     if (route.params?.gender) {
       setIsMale(route.params.gender === 'male');
@@ -85,8 +76,7 @@ export default function MannequinScreen({ navigation, route }) {
     }
   }, [route.params?.outfit]);
   
-  
-
+  // Creates animated values for drag and pinch
   const makeItemState = (initialX, initialY) => {
     const translateX = useRef(new Animated.Value(initialX)).current;
     const translateY = useRef(new Animated.Value(initialY)).current;
@@ -127,6 +117,7 @@ export default function MannequinScreen({ navigation, route }) {
   const shoes = makeItemState(50, 300);
   const accessory = makeItemState(90, 200);
 
+  // Handle selection of a clothing item
   const handleSelectClothing = (item) => {
     setSelectedClothes((prev) => ({
       ...prev,
@@ -135,16 +126,8 @@ export default function MannequinScreen({ navigation, route }) {
     setActionHistory((prev) => [...prev, selectedCategory]);
     setModalVisible(false);
   };
-
-  const isValidDate = (dateStr) => {
-    if (!dateStr) return true; // allow empty (optional)
-    const regex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format
-    if (!regex.test(dateStr)) return false;
   
-    const dateObj = new Date(dateStr);
-    return !isNaN(dateObj.getTime());
-  };
-  
+  // Check if a given date is valid
   const isRealDate = (mm, dd, yyyy) => {
     const month = parseInt(mm, 10);
     const day = parseInt(dd, 10);
@@ -172,6 +155,7 @@ export default function MannequinScreen({ navigation, route }) {
     return day >= 1 && day <= maxDay;
   };
 
+  // Save planned outfit with positioning data and gender
   const handlePlanOutfit = async () => {
     if (!occasion) {
       Alert.alert("Missing Info", "Please enter an occasion");
@@ -216,7 +200,7 @@ export default function MannequinScreen({ navigation, route }) {
     };
   
     try {
-      console.log("🛰️ Sending to:", `${BACKEND_URL}/plan-outfit`);
+      console.log("Sending to:", `${BACKEND_URL}/plan-outfit`);
       const response = await fetch(`${BACKEND_URL}/plan-outfit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -229,7 +213,7 @@ export default function MannequinScreen({ navigation, route }) {
       try {
         data = JSON.parse(text);
       } catch (e) {
-        console.error("❌ Not valid JSON. Raw response:", text);
+        console.error("Not valid JSON. Raw response:", text);
         throw new Error("Invalid JSON returned from server.");
       }
   
@@ -257,8 +241,7 @@ export default function MannequinScreen({ navigation, route }) {
     }
   };
   
-  
-  
+  // Load user clothing for a category
   const fetchClothing = async (category) => {
     try {
       const response = await fetch(`${BACKEND_URL}/get_user_clothing/${user_id}/${category}`);
@@ -410,7 +393,7 @@ export default function MannequinScreen({ navigation, route }) {
 
           </View>
 
-          {/* Buttons */}
+          {/* Bottom Buttons */}
           <View style={styles.buttonContainer}>
           {['top', 'bottom', 'shoes', 'accessories'].map((type) => (
             <TouchableOpacity
@@ -418,7 +401,6 @@ export default function MannequinScreen({ navigation, route }) {
               style={styles.styleButton}
               onPress={() => {
                 setSelectedCategory(type);
-                
                 const categoryMap = {
                   top: 'Tops',
                   bottom: 'Bottoms',
@@ -438,10 +420,7 @@ export default function MannequinScreen({ navigation, route }) {
               </Text>
             </TouchableOpacity>
           ))}
-
-
           </View>
-
           {/* Modal */}
           <Modal visible={isModalVisible} transparent animationType="slide">
             <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
@@ -476,6 +455,7 @@ export default function MannequinScreen({ navigation, route }) {
               </View>
             </TouchableWithoutFeedback>
           </Modal>
+          {/* Outfit planning modal */}
           <Modal visible={planModalVisible} transparent animationType="fade">
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
@@ -533,7 +513,6 @@ export default function MannequinScreen({ navigation, route }) {
               </View>
             </View>
           </Modal>
-
         </View>
       </SafeAreaView>
     </GestureHandlerRootView>

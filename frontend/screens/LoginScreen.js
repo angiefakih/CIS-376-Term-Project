@@ -15,6 +15,8 @@ import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/nativ
 import Constants from 'expo-constants';
 
 const { manifest2, manifest } = Constants;
+
+// Get the backend IP depending on the platform
 const backendHost =
   Platform.OS === 'web'
     ? 'localhost'
@@ -24,6 +26,7 @@ const BACKEND_URL = `http://${backendHost}:5000`;
 import backgroundImage from '../assets/images/loginbackground.jpg';
 
 export default function LoginScreen() {
+  // Setup state and navigation tools
   const navigation = useNavigation();
   const route = useRoute();
   const [email, setEmail] = useState('');
@@ -31,6 +34,7 @@ export default function LoginScreen() {
   const [message, setMessage] = useState(null);
   const messageTimerRef = useRef(null);
 
+  // Shows a message for a few seconds
   const showMessage = (text, color) => {
     if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
     setMessage(null);
@@ -42,6 +46,7 @@ export default function LoginScreen() {
     }, 0);
   };
 
+  // Clears input when screen is focused
   useFocusEffect(
     useCallback(() => {
       setEmail('');
@@ -50,6 +55,7 @@ export default function LoginScreen() {
     }, [])
   );
 
+  // Show success message if sign up was successful
   useEffect(() => {
     if (route?.params?.signupSuccess) {
       showMessage("Account created successfully.", "green");
@@ -59,6 +65,7 @@ export default function LoginScreen() {
     };
   }, [route]);
 
+  // Sends login request to backend
   const handleLogin = async () => {
     if (!email || !password) {
       showMessage("Email/Password Empty", "red");
@@ -87,18 +94,24 @@ export default function LoginScreen() {
   };
 
   return (
+    // Background image wrapper
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
+
+      {/* Keyboard avoiding view for mobile input */}
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.overlay}>
         <ScrollView contentContainerStyle={styles.inner}>
-          <View style={styles.blurBox}>
-            <Text style={styles.title}>Welcome Back</Text>
 
+          {/* Login form box with styling */}
+          <View style={styles.blurBox}>
+            {/* Title text */}
+            <Text style={styles.title}>Welcome Back</Text>
+            {/* Show login or signup success/failure message */}
             {message?.text && (
               <Text style={[styles.messageText, { color: message.color }]}>
                 {message.text}
               </Text>
             )}
-
+            {/* Email input */}
             <TextInput
               placeholder="Email"
               placeholderTextColor="#ccc"
@@ -108,7 +121,7 @@ export default function LoginScreen() {
               value={email}
               onChangeText={setEmail}
             />
-
+            {/* Password input */}
             <TextInput
               placeholder="Password"
               placeholderTextColor="#ccc"
@@ -117,11 +130,11 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
             />
-
+            {/* Login button */}
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
               <Text style={styles.buttonText}>Log In</Text>
             </TouchableOpacity>
-
+            {/* Link to sign-up screen */}
             <TouchableOpacity onPress={() => navigation.navigate("SignUp")} style={styles.linkWrapper}>
               <Text style={styles.linkText}>Don’t have an account? <Text style={{ fontWeight: 'bold' }}>Sign up</Text></Text>
             </TouchableOpacity>

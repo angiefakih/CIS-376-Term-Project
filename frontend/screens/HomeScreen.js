@@ -15,6 +15,7 @@ import { Alert } from 'react-native';
 export default function HomeScreen({ navigation, route }) {
   const user_id = route.params?.user_id;
 
+  // Logs the user out after confirmation
   const handleLogout = () => {
     Alert.alert(
       "Log Out",
@@ -31,35 +32,42 @@ export default function HomeScreen({ navigation, route }) {
     );
   };
   
-
   return (
+    // Background image wrapper
     <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
       <View style={styles.darkOverlay}>
-        
+
+        {/* Logout button in the corner */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={22} color="#F5F5DC" />
         </TouchableOpacity>
 
-
+        {/* Welcome title text */}
         <View style={styles.container}>
           <Text style={styles.title}>Welcome to your Closet Companion</Text>
-
+          
+          {/* Button grid*/}
           <View style={styles.grid}>
+
+            {/* Upload item screen button */}
             <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate('Upload', { user_id })}>
               <FontAwesome5 name="upload" size={22} color="#F5F3EF" />
               <Text style={styles.gridText}>Upload Item</Text>
             </TouchableOpacity>
 
+            {/* Wardrobe screen button */}
             <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate('Wardrobe', { user_id })}>
               <Feather name="grid" size={22} color="#F5F3EF" />
               <Text style={styles.gridText}>View Wardrobe</Text>
             </TouchableOpacity>
 
+            {/* Mannequin screen button */}
             <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate('Mannequin', { user_id })}>
               <MaterialCommunityIcons name="human-female" size={22} color="#F5F3EF" />
               <Text style={styles.gridText}>Style Mannequin</Text>
             </TouchableOpacity>
 
+            {/* Plan outfit screen button */}
             <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate('PlanOutfit',{ user_id })}>
               <FontAwesome5 name="calendar-check" size={22} color="#F5F3EF" />
               <Text style={styles.gridText}>Plan Outfit</Text>
